@@ -13,9 +13,8 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 # sshd
 echo root:eshxcmhk | chpasswd
-sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
-sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sed -i 's/^[# \t]*\(Port 22\)$/\1/g' /etc/ssh/sshd_config
+sed -i 's/^[# \t]*\(PermitRootLogin\).*$/PermitRootLogin yes/g' /etc/ssh/sshd_config
 
 expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
@@ -42,8 +41,14 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 systemctl enable sshd && systemctl start sshd
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
+# mwget
+wget http://jaist.dl.sourceforge.net/project/kmphpfm/mwget/0.1/mwget_0.1.0.orig.tar.bz2 && tar -xjvf mwget_0.1.0.orig.tar.bz2 && cd mwget_0.1.0.orig && ./configure && make && make install && cd .. && rm -rf mwget_0.1.0.orig*
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+
 #nginx
 mwget https://nginx.org/download/nginx-1.16.1.tar.gz && tar -zxvf nginx-1.16.1.tar.gz && cd nginx-1.16.1 && ./configure --prefix=/usr/local/nginx && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 
+echo "Done"
 exit 0
