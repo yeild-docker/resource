@@ -1,5 +1,5 @@
 
-yum install -y openssh-server wget gcc gcc-c++ automake autoconf libtool make openssl openssl-devel passwd cracklib-dicts expect
+yum install -y openssh-server passwd cracklib-dicts expect
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 echo root:eshxcmhk | chpasswd
