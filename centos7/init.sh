@@ -17,6 +17,8 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/nginx/init.sh" | sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
+echo "source /etc/profile" >> /root/.bashrc && source /root/.bashrc
+
 yum clean all && rm -rf /var/cache/yum/*
 
 echo "Done"
