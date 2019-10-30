@@ -46,9 +46,10 @@ wget http://jaist.dl.sourceforge.net/project/kmphpfm/mwget/0.1/mwget_0.1.0.orig.
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 #nginx
-mwget https://nginx.org/download/nginx-1.16.1.tar.gz && tar -zxvf nginx-1.16.1.tar.gz && cd nginx-1.16.1 && ./configure --prefix=/usr/local/nginx && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile
+mwget https://nginx.org/download/nginx-1.16.1.tar.gz && tar -zxvf nginx-1.16.1.tar.gz && cd nginx-1.16.1 && ./configure --prefix=/usr/local/nginx && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile && cd .. && rm -rf nginx-1.16.1*
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
+yum clean all && rm -rf /var/cache/yum/*
 
 echo "Done"
 exit 0
