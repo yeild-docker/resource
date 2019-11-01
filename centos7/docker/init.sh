@@ -27,6 +27,9 @@ echo "List and sort the versions available in your repo. This example sorts resu
 echo "yum list docker-ce --showduplicates | sort -r"
 yum install -y docker-ce$_VERSION docker-ce-cli$_VERSION containerd.io
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+if ! [[ `sysctl net.ipv4.ip_forward` =~ net\.ipv4\.ip_forward[[:blank:]]=[[:blank:]]1 ]]; then
+	echo -e "\nnet.ipv4.ip_forward=1\n" >> /etc/sysctl.conf && systemctl restart network
+fi
 
 systemctl enable docker
 systemctl start docker
