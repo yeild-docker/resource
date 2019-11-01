@@ -1,21 +1,17 @@
 
 # _VERSION=-19.03.4
 _VERSION=""
-_DOCKER=0
 
-while getopts ":hdv" opt
+while getopts ":hv:" opt
 do
 	case $opt in
 		h)
 		echo "Usage of Options:"
 		echo "-h help"
-		echo "-d run from docker"
 		echo "-v install a specific version of Docker"
 			;;
-		d)
-		_DOCKER=$OPTARG ;;
 		v)
-		_VERSION=$OPTARG ;;
+		_VERSION="-$OPTARG" ;;
 		?)
 		echo "Unsurpoted Option -${opt}"
 		exit 1;;

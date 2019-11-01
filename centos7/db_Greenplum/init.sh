@@ -1,5 +1,6 @@
 
 # run cluster with docker
+curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/docker/init.sh" | sh -s -- -v 19.03.4
 docker run -tid --privileged=true -p 5432:5432 --name gpmaster centos:7 /usr/sbin/init
 docker run -tid --privileged=true --name gpsdw1 centos:7 /usr/sbin/init
 docker run -tid --privileged=true --name gpsdw2 centos:7 /usr/sbin/init
