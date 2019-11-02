@@ -103,8 +103,8 @@ vm.dirty_expire_centisecs = 500
 vm.dirty_writeback_centisecs = 100
 vm.dirty_background_ratio = 0 # See Note 5
 vm.dirty_ratio = 0
-vm.dirty_background_bytes = 1610612736
-vm.dirty_bytes = 4294967296
+vm.dirty_background_bytes = 1610612
+vm.dirty_bytes = 4294967
 EOF
 fi
 if [[ ! "`grep '^-1000$' /proc/self/oom_score_adj`" ]]; then
@@ -292,6 +292,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Rollback Failed!"; exit $cmd_rs; fi
 rm -rf ~/gpAdminLogs/backout_gpinitsystem_*
 fi
 rm -rf ~/gpAdminLogs/gpinitsystem*
+rm -rf /tmp/*PGSQL.5432*
 
 echo "Run gpinitsystem"
 expect<<!
@@ -304,6 +305,12 @@ expect {
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "gpinitsystem exit:$cmd_rs";exit $cmd_rs; fi
+
+if [[ ! "`ps aux|grep postgres.*master.*process | grep -v grep`" ]]; then
+	echo "Exit with failed."
+	exit 1
+fi
+
 if [[ ! "`grep '^host[[:blank:]]*all[[:blank:]]*all[[:blank:]]*0.0.0.0/0[[:blank:]]*md5$' ${_DATA}/master/gpseg-1/pg_hba.conf`" ]]; then
 	echo "host     all         all             0.0.0.0/0  md5" >> ${_DATA}/master/gpseg-1/pg_hba.conf
 	gpstop -u
