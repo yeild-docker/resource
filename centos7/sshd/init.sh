@@ -7,7 +7,7 @@ do
 		h)
 		echo "Usage of Options:"
 		echo "-h help"
-		echo "-p password of root user.Default:admin96515"
+		echo "-p password of root user."
 			;;
 		p)
 		_PASSWORD=$OPTARG ;;
@@ -28,22 +28,34 @@ sed -i 's/^[# \t]*\(PermitRootLogin\).*$/PermitRootLogin yes/g' /etc/ssh/sshd_co
 
 expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
-expect "Enter passphrase" { send "\r" }
-expect "Enter same passphrase again" { send "\r" }
+expect {
+	"Overwrite" { send "y\r"; exp_continue; }
+	"Enter file in which to save the key" { send "\r"; exp_continue; }
+	"Enter passphrase" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; exp_continue; }
+}
 expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key
-expect "Enter passphrase" { send "\r" }
-expect "Enter same passphrase again" { send "\r" }
+expect {
+	"Overwrite" { send "y\r"; exp_continue; }
+	"Enter file in which to save the key" { send "\r"; exp_continue; }
+	"Enter passphrase" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; exp_continue; }
+}
 expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_ed25519_key
-expect "Enter passphrase" { send "\r" }
-expect "Enter same passphrase again" { send "\r" }
+expect {
+	"Overwrite" { send "y\r"; exp_continue; }
+	"Enter file in which to save the key" { send "\r"; exp_continue; }
+	"Enter passphrase" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; exp_continue; }
+}
 expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
