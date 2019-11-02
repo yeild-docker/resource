@@ -306,20 +306,32 @@ expect {
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "gpinitsystem exit:$cmd_rs";exit $cmd_rs; fi
 
+exit 0
+SUEOF
+fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+
 if [[ ! "`ps aux|grep postgres.*master.*process | grep -v grep`" ]]; then
 	echo "Exit with failed."
 	exit 1
 fi
 
+su - gpadmin << SUEOF
 if [[ ! "`grep '^host[[:blank:]]*all[[:blank:]]*all[[:blank:]]*0.0.0.0/0[[:blank:]]*md5$' ${_DATA}/master/gpseg-1/pg_hba.conf`" ]]; then
 	echo "host     all         all             0.0.0.0/0  md5" >> ${_DATA}/master/gpseg-1/pg_hba.conf
-	gpstop -u
 fi
 
-exit 0
+expect<<!
+spawn psql postgres
+expect "postgres=#"
+send "ALTER USER pgadmin with PASSWORD 'admin96515';\r"
+expect "postgres=#"
+send "\\\q\r"
+expect eof
+!
+gpstop -u
+
 SUEOF
-fi
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 echo "=========================================="
 echo "Init Install Done!"
