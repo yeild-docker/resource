@@ -13,6 +13,7 @@ docker run -tid --privileged=true --restart=always --network=gpcluster --name gp
 
 _GPVERSION=6.0.1
 _GPPACK=greenplum-db-${_GPVERSION}.rpm
+_VMSSHPWD=96515.cc
 wget https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 docker cp ./${_GPPACK} gpmaster:/${_GPPACK} && docker cp ./init.sh gpmaster:/init.sh
@@ -25,9 +26,9 @@ docker cp ./${_GPPACK} gpsdw3:/${_GPPACK} && docker cp ./init.sh gpsdw3:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 
-docker exec -it gpsdw1 /bin/sh /init.sh -f ${_GPPACK}
-docker exec -it gpsdw2 /bin/sh /init.sh -f ${_GPPACK}
-docker exec -it gpsdw3 /bin/sh /init.sh -f ${_GPPACK}
-docker exec -it gpmaster /bin/sh /init.sh -m -f ${_GPPACK}
+docker exec -it gpsdw1 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
+docker exec -it gpsdw2 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
+docker exec -it gpsdw3 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
+docker exec -it gpmaster /bin/sh /init.sh -- -m -P ${_VMSSHPWD} -f ${_GPPACK}
 
 exit 0
