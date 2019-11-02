@@ -30,9 +30,8 @@ expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
 expect {
 	"Overwrite" { send "y\r"; exp_continue; }
-	"Enter file in which to save the key" { send "\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
-	"Enter same passphrase agai" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; }
 }
 expect eof
 !
@@ -41,9 +40,8 @@ expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key
 expect {
 	"Overwrite" { send "y\r"; exp_continue; }
-	"Enter file in which to save the key" { send "\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
-	"Enter same passphrase agai" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; }
 }
 expect eof
 !
@@ -52,9 +50,8 @@ expect<<!
 spawn ssh-keygen -t rsa -f /etc/ssh/ssh_host_ed25519_key
 expect {
 	"Overwrite" { send "y\r"; exp_continue; }
-	"Enter file in which to save the key" { send "\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
-	"Enter same passphrase agai" { send "\r"; exp_continue; }
+	"Enter same passphrase agai" { send "\r"; }
 }
 expect eof
 !
