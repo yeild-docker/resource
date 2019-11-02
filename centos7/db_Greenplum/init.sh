@@ -301,7 +301,7 @@ spawn gpinitsystem -c gpinitsystem_config -h hostfile_gpinitsystem
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	">" { send "y\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "gpinitsystem exit:$cmd_rs";exit $cmd_rs; fi
