@@ -20,7 +20,7 @@ done
 yum install -y openssh-server passwd cracklib-dicts expect
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
-if [ $_PASSWORD -ne "" ]; then
+if [ "$_PASSWORD" -ne "" ]; then
 	echo root:$_PASSWORD | chpasswd
 fi
 sed -i 's/^[# \t]*\(Port 22\)$/\1/g' /etc/ssh/sshd_config

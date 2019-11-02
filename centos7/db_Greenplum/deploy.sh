@@ -1,6 +1,9 @@
 # run cluster with docker
-curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/docker/init.sh" | sh -s -- -v 19.03.4
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+docker
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then
+	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/docker/init.sh" | sh -s -- -v 19.03.4
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+fi
 docker network create gpcluster
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 docker run -tid --privileged=true --restart=always --network=gpcluster -p 5432:5432 --name gpmaster centos:7 /usr/sbin/init
