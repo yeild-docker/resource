@@ -29,14 +29,16 @@ do
 	esac
 done
 
-echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
+if [[ ! "`grep '^199.232.4.133\traw.githubusercontent.com$' /etc/hosts`" ]]; then
+	echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
+fi
 # sshd
 curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/sshd/init.sh" | sh -s -- -p eshxcmhk
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 yum install -y wget sudo openssh expect
 
-# sed -i "s|^\(SELINUX=\).*$|\1disabled|g" /etc/selinux/config
+sed -i "s|^\(SELINUX=\).*$|\1disabled|g" /etc/selinux/config
 # systemctl stop firewalld && systemctl disable firewalld
 
 echo "Create group: gpadmin"
@@ -69,16 +71,64 @@ if [ ! -d "/usr/local/greenplum-db" ]; then
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 
+if [[ ! "`grep '^kernel.shmall[[:blank:]]*=.*$' /etc/sysctl.conf`" ]]; then
+cat >> /etc/sysctl.conf << EOF
+# kernel.shmall = _PHYS_PAGES / 2 # See Note 1
+kernel.shmall = 500000
+# kernel.shmmax = kernel.shmall * PAGE_SIZE # See Note 1
+kernel.shmmax = 1000000
+kernel.shmmni = 4096
+vm.overcommit_memory = 2
+vm.overcommit_ratio = 95 # See Note 2
+net.ipv4.ip_local_port_range = 10000 65535 # See Note 3
+kernel.sem = 500 2048000 200 40960
+kernel.sysrq = 1
+kernel.core_uses_pid = 1
+kernel.msgmnb = 65536
+kernel.msgmax = 65536
+kernel.msgmni = 2048
+# net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.default.accept_source_route = 0
+# net.ipv4.tcp_max_syn_backlog = 4096
+net.ipv4.conf.all.arp_filter = 1
+# net.core.netdev_max_backlog = 10000
+# net.core.rmem_max = 2097152
+# net.core.wmem_max = 2097152
+vm.swappiness = 10
+vm.zone_reclaim_mode = 0
+vm.dirty_expire_centisecs = 500
+vm.dirty_writeback_centisecs = 100
+vm.dirty_background_ratio = 0 # See Note 5
+vm.dirty_ratio = 0
+vm.dirty_background_bytes = 1610612736
+vm.dirty_bytes = 4294967296
+EOF
+fi
+if [[ ! "`grep '^-1000$' /proc/self/oom_score_adj`" ]]; then
+	echo -1000 > /proc/self/oom_score_adj
+fi
+sysctl -p
+
 echo "Source envir of user gpadmin"
 su - gpadmin << EOF
 if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' /home/gpadmin/.bashrc`" ]]; then
 	echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ~/.bashrc
 fi
+if [[ ! "`grep '^export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj$' /home/gpadmin/.bashrc`" ]]; then
+	echo -e "export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj\n" >> ~/.bashrc
+fi
+if [[ ! "`grep '^export PG_OOM_ADJUST_VALUE=0$' /home/gpadmin/.bashrc`" ]]; then
+	echo -e "export PG_OOM_ADJUST_VALUE=0\n" >> ~/.bashrc
+fi
+if [[ ! "`grep '^export MASTER_DATA_DIRECTORY=.*$' /home/gpadmin/.bashrc`" ]]; then
+	echo -e "export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1\n" >> ~/.bashrc
+fi
+
 source ~/.bashrc
 exit 0
 EOF
 
-if [ $_MASTER == 1 ]; then
+if [[ $_MASTER = 1 ]]; then
 echo "Generate ssh-keygen of user: gpadmin"
 su - gpadmin << SUEOF
 source /usr/local/greenplum-db/greenplum_path.sh
@@ -91,8 +141,8 @@ expect {
 	"Enter file in which to save the key" { send "\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
 	"Enter same passphrase agai" { send "\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 # fi
@@ -107,8 +157,8 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw1
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 expect<<!
@@ -116,8 +166,8 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw2
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 expect<<!
@@ -125,8 +175,8 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw3
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 exit 0
@@ -148,8 +198,8 @@ spawn gpssh-exkeys -f hostfile_exkeys
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 exit 0
@@ -200,8 +250,8 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 su - gpadmin << SUEOF
 echo "Run test for segment"
-# gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/primary -d ${_DATA}/mirror
-# cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Test Failed!"; exit $cmd_rs; fi
+gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/primary -d ${_DATA}/mirror
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Test Failed!"; exit $cmd_rs; fi
 
 echo "-----------Initializing Greenplum Database-----------"
 echo "create hostfile_gpinitsystem"
@@ -232,24 +282,29 @@ expect<<!
 spawn sh ~/gpAdminLogs/backout_gpinitsystem_*
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Rollback Failed!"; exit $cmd_rs; fi
 rm -rf ~/gpAdminLogs/backout_gpinitsystem_*
 fi
+rm -rf ~/gpAdminLogs/gpinitsystem*
 
 echo "Run gpinitsystem"
 expect<<!
+set timeout 3600
 spawn gpinitsystem -c gpinitsystem_config -h hostfile_gpinitsystem
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	">" { send "y\r"; exp_continue; }
+	eof { send_user "eof" }
 }
-expect eof
 !
-# "Continue with Greenplum creation:" { sleep 1 send "y\r"; exp_continue; }
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "gpinitsystem exit:$cmd_rs";exit $cmd_rs; fi
+if [[ ! "`grep '^host[[:blank:]]*all[[:blank:]]*all[[:blank:]]*0.0.0.0/0[[:blank:]]*md5$' ${_DATA}/master/gpseg-1/pg_hba.conf`" ]]; then
+	echo "host     all         all             0.0.0.0/0  md5" >> ${_DATA}/master/gpseg-1/pg_hba.conf
+	gpstop -u
+fi
 
 exit 0
 SUEOF
