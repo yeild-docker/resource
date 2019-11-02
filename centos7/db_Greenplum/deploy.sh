@@ -1,3 +1,6 @@
+echo "Work into ~/greenplum"
+mkdir -p ~/greenplum
+cd ~/greenplum
 # run cluster with docker
 docker
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then
@@ -13,8 +16,9 @@ docker run -tid --privileged=true --restart=always --network=gpcluster --name gp
 
 _GPVERSION=6.0.1
 _GPPACK=greenplum-db-${_GPVERSION}.rpm
-_VMSSHPWD=96515.cc
+_VM_SSHPWD=96515.cc
 wget https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
+wget https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/db_Greenplum/init.sh -O init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 docker cp ./${_GPPACK} gpmaster:/${_GPPACK} && docker cp ./init.sh gpmaster:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -26,9 +30,13 @@ docker cp ./${_GPPACK} gpsdw3:/${_GPPACK} && docker cp ./init.sh gpsdw3:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 
-docker exec -it gpsdw1 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
-docker exec -it gpsdw2 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
-docker exec -it gpsdw3 /bin/sh /init.sh -- -P ${_VMSSHPWD} -f ${_GPPACK}
-docker exec -it gpmaster /bin/sh /init.sh -- -m -P ${_VMSSHPWD} -f ${_GPPACK}
+docker exec -it gpsdw1 /bin/sh /init.sh -- -P ${_VM_SSHPWD} -f ${_GPPACK}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Init gpsdw1 Failed!"; exit $cmd_rs; fi
+docker exec -it gpsdw2 /bin/sh /init.sh -- -P ${_VM_SSHPWD} -f ${_GPPACK}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Init gpsdw2 Failed!"; exit $cmd_rs; fi
+docker exec -it gpsdw3 /bin/sh /init.sh -- -P ${_VM_SSHPWD} -f ${_GPPACK}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Init gpsdw3 Failed!"; exit $cmd_rs; fi
+docker exec -it gpmaster /bin/sh /init.sh -- -m -P ${_VM_SSHPWD} -f ${_GPPACK}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Init gpmaster Failed!"; exit $cmd_rs; fi
 
 exit 0
