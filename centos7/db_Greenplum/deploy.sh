@@ -13,13 +13,13 @@ docker run -tid --privileged=true --restart=always --network=gpcluster --name gp
 
 wget https://github.com/greenplum-db/gpdb/releases/download/6.0.1/greenplum-db-6.0.1-rhel7-x86_64.rpm -O greenplum-db-6.0.1.rpm
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-docker cp ./greenplum-db-6.0.1.rpm gpmaster:/greenplum-db-6.0.1.rpm
+docker cp ./greenplum-db-6.0.1.rpm gpmaster:/greenplum-db-6.0.1.rpm && docker cp ./init.sh gpmaster:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-docker cp ./greenplum-db-6.0.1.rpm gpsdw1:/greenplum-db-6.0.1.rpm
+docker cp ./greenplum-db-6.0.1.rpm gpsdw1:/greenplum-db-6.0.1.rpm && docker cp ./init.sh gpsdw1:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-docker cp ./greenplum-db-6.0.1.rpm gpsdw2:/greenplum-db-6.0.1.rpm
+docker cp ./greenplum-db-6.0.1.rpm gpsdw2:/greenplum-db-6.0.1.rpm && docker cp ./init.sh gpsdw2:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-docker cp ./greenplum-db-6.0.1.rpm gpsdw3:/greenplum-db-6.0.1.rpm
+docker cp ./greenplum-db-6.0.1.rpm gpsdw3:/greenplum-db-6.0.1.rpm && docker cp ./init.sh gpsdw3:/init.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 
