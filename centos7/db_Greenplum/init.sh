@@ -1,10 +1,11 @@
 #!/bin/bash
 _MASTER=0
 _PASSWORD="admin96515"
+_PASSWORD_SSH="admin96515"
 _FILE=""
 _DATA="/data/gp"
 
-while getopts ":hmp:f:d:" opt
+while getopts ":hmp:P:f:d:" opt
 do
 	case $opt in
 		h)
@@ -12,6 +13,7 @@ do
 		echo "-h help"
 		echo "-m install with master"
 		echo "-p password of Greenplum's user:gpadmin.Default:admin96515"
+		echo "-P password of ssh within docker"
 		echo "-f the rpm package file of Greenplum"
 		echo "-d the Data Storage Areas path. Default: /data/gp"
 			;;
@@ -19,6 +21,8 @@ do
 		_MASTER=1 ;;
 		p)
 		_PASSWORD=$OPTARG ;;
+		P)
+		_PASSWORD_SSH=$OPTARG ;;
 		f)
 		_FILE=$OPTARG ;;
 		d)
@@ -33,13 +37,12 @@ if [[ ! "`grep '^199.232.4.133\traw.githubusercontent.com$' /etc/hosts`" ]]; the
 	echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
 fi
 # sshd
-curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/sshd/init.sh" | sh -s -- -p eshxcmhk
+curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/sshd/init.sh" | sh -s -- -p $_PASSWORD_SSH
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 yum install -y wget sudo openssh expect
 
 sed -i "s|^\(SELINUX=\).*$|\1disabled|g" /etc/selinux/config
-# systemctl stop firewalld && systemctl disable firewalld
 
 echo "Create group: gpadmin"
 groupadd -g 5999 gpadmin
