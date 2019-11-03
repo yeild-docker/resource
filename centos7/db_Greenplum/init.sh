@@ -321,7 +321,7 @@ if [[ ! "`grep '^host[[:blank:]]*all[[:blank:]]*all[[:blank:]]*0.0.0.0/0[[:blank
 	echo "host     all         all             0.0.0.0/0  md5" >> ${_DATA}/master/gpseg-1/pg_hba.conf
 fi
 
-psql -d postgres -c "ALTER USER pgadmin with PASSWORD '${_PASSWORD}';"
+psql -d postgres -c "ALTER USER gpadmin with PASSWORD '${_PASSWORD}';"
 gpstop -u
 
 SUEOF
