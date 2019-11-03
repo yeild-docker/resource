@@ -144,7 +144,7 @@ expect {
 	"Enter file in which to save the key" { send "\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
 	"Enter same passphrase agai" { send "\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -160,7 +160,7 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw1
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -169,7 +169,7 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw2
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -178,7 +178,7 @@ spawn ssh-copy-id -i /home/gpadmin/.ssh/id_rsa.pub gpadmin@gpsdw3
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -201,7 +201,7 @@ spawn gpssh-exkeys -f hostfile_exkeys
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 	"password:" { send "${_PASSWORD}\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -288,7 +288,7 @@ expect<<!
 spawn sh ~/gpAdminLogs/backout_gpinitsystem_*
 expect {
 	"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Rollback Failed!"; exit $cmd_rs; fi

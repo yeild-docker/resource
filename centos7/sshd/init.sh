@@ -32,7 +32,7 @@ expect {
 	"Overwrite" { send "n\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
 	"Enter same passphrase agai" { send "\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -42,7 +42,7 @@ expect {
 	"Overwrite" { send "n\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
 	"Enter same passphrase agai" { send "\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -52,7 +52,7 @@ expect {
 	"Overwrite" { send "n\r"; exp_continue; }
 	"Enter passphrase" { send "\r"; exp_continue; }
 	"Enter same passphrase agai" { send "\r"; exp_continue; }
-	eof { send_user "eof" }
+	eof
 }
 !
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
