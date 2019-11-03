@@ -270,9 +270,12 @@ sh /usr/local/greenplum-db/greenplum_path.sh
 echo "Configure gpinitsystem_config"
 rm -rf ./gpinitsystem_config
 cp /usr/local/greenplum-db/docs/cli_help/gpconfigs/gpinitsystem_config ./gpinitsystem_config
-sed -i "s|^\(declare[[:blank:]]*-a[[:blank:]]*DATA_DIRECTORY=\).*$|\1(/data/gp/primary /data/gp/primary /data/gp/primary)|g" ./gpinitsystem_config
+sed -i "s|^\(declare[[:blank:]]*-a[[:blank:]]*DATA_DIRECTORY=\).*$|\1(${_DATA}/primary ${_DATA}/primary ${_DATA}/primary)|g" ./gpinitsystem_config
 sed -i "s|^\(MASTER_HOSTNAME=\).*$|\1gpmaster|g" ./gpinitsystem_config
 sed -i "s|^\(MASTER_DIRECTORY=\).*$|\1${_DATA}/master|g" ./gpinitsystem_config
+
+sed -i "s|^[#]*[[:blank:]]*\(MIRROR_PORT_BASE=.*\)$|\1|g" ./gpinitsystem_config
+sed -i "s|^[#]*[[:blank:]]*\(declare[[:blank:]]*-a[[:blank:]]*MIRROR_DATA_DIRECTORY=\).*$|\1(${_DATA}/mirror ${_DATA}/mirror ${_DATA}/mirror)|g" ./gpinitsystem_config
 
 # If the gpinitsystem utility fails, it will create the following backout script if it has left your system in a partially installed state:
 # ~/gpAdminLogs/backout_gpinitsystem_<user>_<timestamp>
