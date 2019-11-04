@@ -26,7 +26,7 @@ _GPVERSION=6.0.1
 _GPPACK=greenplum-db-${_GPVERSION}.rpm
 _GPPWD=admin96515
 _VM_SSHPWD=96515.cc
-wget https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
+wget -c https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
 wget https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/db_Greenplum/init.sh -O init.sh
 wget https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/db_Greenplum/master.sh -O master.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
