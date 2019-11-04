@@ -21,10 +21,18 @@ done
 
 case $_CENTOS in
 	6)
-	rpm -iUvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+	yum install -y epel-release
+tee /etc/yum.repos.d/docker.repo <<-'EOF'
+[doockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/6/
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+EOF
 	yum update -y
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
-	yum -y install docker-io
+	yum -y install docker-engine
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 	chkconfig docker on
 	service docker start
