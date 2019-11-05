@@ -2,8 +2,9 @@
 _PASSWORD="admin96515"
 _PASSWORD_SSH="admin96515"
 _FILE=""
-_DATA="/data/gp"
+_DATA="/data/gpdata"
 _SEG_COUNTS=4
+_MAP_HOST=/data/greenplum
 
 while getopts ":hm:p:P:f:d:" opt
 do
@@ -33,7 +34,7 @@ done
 mkdir -p ~/greenplum
 cd ~/greenplum
 
-if [[ ! "`grep '^199.232.4.133\traw.githubusercontent.com$' /etc/hosts`" ]]; then
+if [[ ! "`grep '^199.232.4.133[[:blank:]]*raw.githubusercontent.com$' /etc/hosts`" ]]; then
 	echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
 fi
 
@@ -42,11 +43,25 @@ yum install -y wget sudo openssh expect
 # run cluster with docker
 docker &> /dev/null
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then
+	echo "============================== Install sshd =============================="
 	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/docker/init.sh" | sh -s -- -v 19.03.4
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 fi
-# Add When production: -v /data:/data
-docker run -tid --privileged=true --restart=always -p 5438:5432 --name gpmaster centos:7 /usr/sbin/init
+
+mounts=" -v ${_MAP_HOST}/share:/data/share -v ${_MAP_HOST}/master:${_DATA}/master"
+for serial in $(seq 1 $_SEG_COUNTS)
+do
+	mounts="${mounts} -v ${_MAP_HOST}/sdw${serial}/primary:${_DATA}/sdw${serial}/primary"
+	mounts="${mounts} -v ${_MAP_HOST}/sdw${serial}/mirror:${_DATA}/sdw${serial}/mirror"
+done
+echo "============================== Docker Disk MapList =============================="
+echo $mounts | sed "s|[[:blank:]]*-v[[:blank:]]*|\\n|g" | sed "s|:|    ====>    |g"
+echo "================================================================================="
+
+echo "============================== Init docker =============================="
+echo "-------------------------> Create docker containner: gpmaster"
+docker rm -f gpmaster &> /dev/null
+docker run -tid --privileged=true --restart=always ${mounts} -p 5438:5432 --name gpmaster centos:7 /usr/sbin/init
 cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 1 ]; then echo "Create docker containner gpmaster failed"; exit $cmd_rs; fi
 
 _GPVERSION=6.0.1
@@ -55,18 +70,20 @@ _GPPWD=admin96515
 _VM_SSHPWD=96515.cc
 wget -c https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
-docker cp ./${_GPPACK} gpmaster:/${_GPPACK}
+echo "-------------------------> Copy `pwd`/${_GPPACK} to /data/greenplum/share which shared to gpmaster"
+mkdir -p /data/greenplum/share
+\cp -rf ./${_GPPACK} ${_MAP_HOST}/share/${_GPPACK}
+_FILE=/data/${_GPPACK}
 
-docker exec -ti gpmaster /bin/bash
-
+function install_gp() {
 # locale
 echo "============================== Init locale =============================="
 curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/locale/init.sh" | sh
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 # sshd
 echo "============================== Init sshd =============================="
 curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/sshd/init.sh" | sh -s -- -p $_PASSWORD_SSH
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 echo "============================== Init Greenplum Install Evnironment =============================="
 echo "-------------------------> Disable selinux"
@@ -74,17 +91,17 @@ sed -i "s|^\(SELINUX=\).*$|\1disabled|g" /etc/selinux/config
 
 echo "-------------------------> Create Greenplum group: gpadmin"
 groupadd -g 5999 gpadmin
-cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 echo "-------------------------> Create Greenplum user: gpadmin"
 useradd -u 5998 gpadmin -r -m -g gpadmin
-cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 echo "-------------------------> Passwd Greenplum user: gpadmin"
 passwd gpadmin << EOF
 $_PASSWORD
 $_PASSWORD
 EOF
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 echo "-------------------------> Grant sudo with Greenplum user: gpadmin"
 sed -i 's/^#[ \t]*\(%wheel[ \t]*ALL=(ALL)[ \t]*NOPASSWD:[ \t]*ALL\)$/\1/g' /etc/sudoers
 usermod -aG wheel gpadmin
@@ -97,14 +114,14 @@ if [ ! -d "/usr/local/greenplum-db" ]; then
 		_FILE="`pwd`/greenplum-db-6.0.1.rpm"
 		echo "-------------------------> Download Greenplum Complete:${_FILE}"
 	fi
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 	echo "-------------------------> Install Greenplum with:${_FILE}"
 	sudo yum install -y $_FILE
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 	echo "-------------------------> Install Complete to:/usr/local/greenplum-db"
 	echo "-------------------------> chown -R gpadmin:gpadmin /usr/local/greenplum*"
 	chown -R gpadmin:gpadmin /usr/local/greenplum*
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 fi
 
 echo "============================== Prepare Greenplum Evnironment =============================="
@@ -223,7 +240,7 @@ expect {
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 exit 0
 SUEOF
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 echo "============================== Enabling n-n Passwordless SSH of user: gpadmin =============================="
 su - gpadmin << SUEOF
@@ -247,7 +264,7 @@ expect {
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 exit 0
 SUEOF
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 echo "============================== Configure Greenplum cluster =============================="
 _SEGMENTS=""
@@ -274,7 +291,7 @@ echo "gpmaster" >> hostfile_gpssh_segonly
 cat hostfile_gpssh_segonly
 
 echo "-------------------------> Create Data Storage Areas for Segment: ${_DATA}/sdw{serial}/primary ${_DATA}/mirror"
-for serial in {1, $_SEG_COUNTS}
+for serial in $(seq 1 $_SEG_COUNTS)
 do
 	primary=${_DATA}/sdw${serial}/primary
 	mirror=${_DATA}/sdw${serial}/mirror
@@ -293,7 +310,7 @@ done
 
 exit 0
 SUEOF
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 echo "============================== Prepare Init Greenplum Cluster =============================="
 su - gpadmin << SUEOF
@@ -370,12 +387,11 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "gpinitsystem exit:$cmd_rs";exit $cmd
 
 exit 0
 SUEOF
-
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; return $cmd_rs; fi
 
 if [[ ! "`ps aux|grep postgres.*master.*process | grep -v grep`" ]]; then
 	echo "Init Greenplum Cluster Failed!"
-	exit 1
+	return 1
 fi
 
 su - gpadmin << SUEOF
@@ -388,10 +404,19 @@ fi
 # gpstop -u
 
 SUEOF
+return 0
+}
+docker exec -ti gpmaster /bin/bash << EOF_DOCKER
+echo "-------------------------> Work into docker: gpmaster"
+install_gp
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+exit 0
+EOF_DOCKER
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 
 echo "============================== INFO =============================="
-echo "=                       Init Install Done!                       ="
-echo "=                Password of gpadmin: ${_PASSWORD}               ="
+echo "-------                 Init Install Done!"
+echo "-------          Password of gpadmin: ${_PASSWORD}"
 echo "=================================================================="
 
 exit 0

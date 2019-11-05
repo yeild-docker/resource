@@ -29,7 +29,7 @@ do
 	esac
 done
 
-if [[ ! "`grep '^199.232.4.133\traw.githubusercontent.com$' /etc/hosts`" ]]; then
+if [[ ! "`grep '^199.232.4.133[[:blank:]]*raw.githubusercontent.com$' /etc/hosts`" ]]; then
 	echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
 fi
 
