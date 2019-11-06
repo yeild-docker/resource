@@ -14,7 +14,7 @@ do
 		echo "-p password of Greenplum's user:gpadmin.Default:admin96515"
 		echo "-P password of ssh within docker"
 		echo "-f the rpm package file of Greenplum"
-		echo "-d the Data Storage Areas path. Default: /data/gp"
+		echo "-d the Data Storage Areas path. Default: ${_DATA}"
 			;;
 		p)
 		_PASSWORD=$OPTARG ;;
@@ -145,37 +145,41 @@ if [[ ! "`grep '^kernel.shmall[[:blank:]]*=.*$' /etc/sysctl.conf`" ]]; then
 		# net.core.wmem_max = 2097152
 		vm.swappiness = 10
 		vm.zone_reclaim_mode = 0
+		# 指定脏数据能存活的时间,毫秒
 		vm.dirty_expire_centisecs = 500
+		# 检查是否有缓存需要清理的间隔时间
 		vm.dirty_writeback_centisecs = 100
-		vm.dirty_background_ratio = 0
-		vm.dirty_ratio = 0
-		vm.dirty_background_bytes = 1610612736 # 1.5G
-		vm.dirty_bytes = 4294967296 # 4G
+		# 内存可以填充脏数据的百分比，这些脏数据稍后会写入磁盘
+		vm.dirty_background_ratio = 5
+		vm.dirty_background_bytes = 0
+		# 可以用脏数据填充的绝对最大系统内存量，当系统到达此点时，必须将所有脏数据提交到磁盘
+		vm.dirty_ratio = 20
+		vm.dirty_bytes = 0
 
 	EOF
 fi
 
 sysctl -p
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
 
 echo "-------------------------> Configure envir of user gpadmin"
 su - gpadmin <<- EOF
 	echo "-------------------------> Work with user: `whoami`"
-	_home=`pwd`
-	if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ${_home}/.bashrc`" ]]; then
-		echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ${_home}/.bashrc"
-		echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ${_home}/.bashrc
+	if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ~/.bashrc`" ]]; then
+		echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ~/.bashrc"
+		echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ~/.bashrc
 	fi
-	if [[ ! "`grep '^export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj$' ${_home}/.bashrc`" ]]; then
-		echo "-------------------------> Add 'export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj' to ${_home}/.bashrc"
-		echo -e "export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj\n" >> ${_home}/.bashrc
+	if [[ ! "`grep '^export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj$' ~/.bashrc`" ]]; then
+		echo "-------------------------> Add 'export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj' to ~/.bashrc"
+		echo -e "export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj\n" >> ~/.bashrc
 	fi
-	if [[ ! "`grep '^export PG_OOM_ADJUST_VALUE=0$' ${_home}/.bashrc`" ]]; then
-		echo "-------------------------> Add 'export PG_OOM_ADJUST_VALUE=0' to ${_home}/.bashrc"
-		echo -e "export PG_OOM_ADJUST_VALUE=0\n" >> ${_home}/.bashrc
+	if [[ ! "`grep '^export PG_OOM_ADJUST_VALUE=0$' ~/.bashrc`" ]]; then
+		echo "-------------------------> Add 'export PG_OOM_ADJUST_VALUE=0' to ~/.bashrc"
+		echo -e "export PG_OOM_ADJUST_VALUE=0\n" >> ~/.bashrc
 	fi
-	if [[ ! "`grep '^export MASTER_DATA_DIRECTORY=.*$' ${_home}/.bashrc`" ]]; then
-		echo "-------------------------> Add 'export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1' to ${_home}/.bashrc"
-		echo -e "export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1\n" >> ${_home}/.bashrc
+	if [[ ! "`grep '^export MASTER_DATA_DIRECTORY=.*$' ~/.bashrc`" ]]; then
+		echo "-------------------------> Add 'export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1' to ~/.bashrc"
+		echo -e "export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1\n" >> ~/.bashrc
 	fi
 
 	source ~/.bashrc
@@ -252,7 +256,7 @@ su - gpadmin <<- SUEOF
 
 	cat hostfile_gpssh_segonly
 
-	echo "-------------------------> Create Data Storage Areas for Segment: ${_DATA}/sdw{serial}/primary ${_DATA}/mirror"
+	echo "-------------------------> Create Data Storage Areas for Segment: ${_DATA}/sdw{serial}/primary ${_DATA}/sdw{serial}/mirror"
 	for serial in $(seq 1 $_SEG_COUNTS)
 	do
 		primary=${_DATA}/sdw${serial}/primary
