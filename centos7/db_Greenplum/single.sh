@@ -34,6 +34,10 @@ if [[ ! "`grep '^199.232.4.133[[:blank:]]*raw.githubusercontent.com$' /etc/hosts
 	echo -e "\n199.232.4.133\traw.githubusercontent.com\n" >> /etc/hosts
 fi
 
+if [[ ! "`grep '^127.0.0.1[[:blank:]]*gpmaster$' /etc/hosts`" ]]; then
+	echo -e "127.0.0.1\tgpmaster\n" >> /etc/hosts
+fi
+
 yum install -y wget sudo openssh expect
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
 
@@ -164,7 +168,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $c
 
 echo "-------------------------> Configure envir of user gpadmin"
 su - gpadmin <<- EOF
-	echo "-------------------------> Work with user: `whoami`"
+	echo -e "-------------------------> Work with user: \c" && whoami
 	if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ~/.bashrc`" ]]; then
 		echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ~/.bashrc"
 		echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ~/.bashrc
@@ -189,8 +193,8 @@ EOF
 echo "============================== Init Greenplum Master =============================="
 echo "============================== Generate ssh-keygen of user: gpadmin =============================="
 su - gpadmin <<- SUEOF
-	echo "-------------------------> Work with user: `whoami`"
-	echo "-------------------------> Generate ssh-keygen of user: `whoami`"
+	echo -e "-------------------------> Work with user: \c" && whoami
+	echo -e "-------------------------> Generate ssh-keygen of user: \c" && whoami
 	source ~/.bashrc
 	rm -rf ~/.ssh/known_hosts
 	expect<<!
@@ -210,7 +214,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $c
 
 echo "============================== Enabling n-n Passwordless SSH of user: gpadmin =============================="
 su - gpadmin <<- SUEOF
-	echo "-------------------------> Work with user: `whoami`"
+	echo -e "-------------------------> Work with user: \c" && whoami
 	echo "-------------------------> Create config of exchange: hostfile_exkeys"
 	if [ -f "hostfile_exkeys" ]; then
 		rm -rf hostfile_exkeys
@@ -235,8 +239,22 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $c
 echo "============================== Configure Greenplum cluster =============================="
 _SEGMENTS=""
 _MIRRORS=""
+
+echo "-------------------------> Create Data Storage Areas for Segment: ${_DATA}/sdw{serial}/primary ${_DATA}/sdw{serial}/mirror"
+for serial in $(seq 1 $_SEG_COUNTS)
+do
+	primary=${_DATA}/sdw${serial}/primary
+	mirror=${_DATA}/sdw${serial}/mirror
+	_SEGMENTS=${_SEGMENTS}" "${primary}
+	_MIRRORS=${_SEGMENTS}" "${mirror}
+	sudo mkdir -p $primary
+	sudo mkdir -p $mirror
+	sudo chown -R gpadmin ${_DATA}/sdw${serial}/*
+	echo "${primary} created"
+	echo "${mirror} created"
+done
 su - gpadmin <<- SUEOF
-	echo "-------------------------> Work with user: `whoami`"
+	echo -e "-------------------------> Work with user: \c" && whoami
 	if [ -f "hostfile" ]; then
 		rm -rf hostfile
 	fi
@@ -256,18 +274,6 @@ su - gpadmin <<- SUEOF
 
 	cat hostfile_gpssh_segonly
 
-	echo "-------------------------> Create Data Storage Areas for Segment: ${_DATA}/sdw{serial}/primary ${_DATA}/sdw{serial}/mirror"
-	for serial in $(seq 1 $_SEG_COUNTS)
-	do
-		primary=${_DATA}/sdw${serial}/primary
-		mirror=${_DATA}/sdw${serial}/mirror
-		_SEGMENTS=${_SEGMENTS}" "${primary}
-		_MIRRORS=${_SEGMENTS}" "${mirror}
-		sudo mkdir -p $primary
-		sudo mkdir -p $mirror
-		sudo chown -R gpadmin ${_DATA}/sdw${serial}/*
-	done
-
 	# echo "-------------------------> Create Data Storage Areas for standby master: ${_DATA}/master"
 	# gpssh -h smdw -e "mkdir -p ${_DATA}/master"
 	# cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
@@ -280,6 +286,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $c
 
 echo "============================== Prepare Init Greenplum Cluster =============================="
 su - gpadmin <<- SUEOF
+	echo -e "-------------------------> Work with user: \c" && whoami
 	source ~/.bashrc
 	echo "-------------------------> Run test for segments"
 	gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/primary -d ${_DATA}/mirror
@@ -290,9 +297,7 @@ su - gpadmin <<- SUEOF
 		rm -rf hostfile_gpinitsystem
 	fi
 	touch hostfile_gpinitsystem
-	echo "gpsdw1" >> hostfile_gpinitsystem
-	echo "gpsdw2" >> hostfile_gpinitsystem
-	echo "gpsdw3" >> hostfile_gpinitsystem
+	echo "gpmaster" >> hostfile_gpinitsystem
 
 	cat hostfile_gpinitsystem
 
@@ -327,22 +332,22 @@ su - gpadmin <<- SUEOF
 	rm -rf ~/gpAdminLogs/backout_gpinitsystem_*
 	else
 	echo "------------------------- WARN -------------------------"
-	echo "If gpinitsystem report data directory already exists, Run this to clean:"
-	echo "gpssh -f hostfile_gpssh_segonly -e 'sudo rm -rf ${_DATA}/primary/* && sudo rm -rf ${_DATA}/mirror/*'"
-	echo "sudo rm -rf ${_DATA}/master/*"
+	echo "-----If gpinitsystem report data directory already exists, Run this to clean:"
+	echo "-----gpssh -f hostfile_gpssh_segonly -e 'sudo rm -rf ${_DATA}/primary/* && sudo rm -rf ${_DATA}/mirror/*'"
+	echo "-----sudo rm -rf ${_DATA}/master/*"
 	echo "--------------------------------------------------------"
 	fi
 	rm -rf ~/gpAdminLogs/gpinitsystem*
 
 	echo "------------------------- WARN -------------------------"
-	echo "If gpinitsystem report port has been used, Run this to clean:"
-	echo "rm -rf /tmp/*PGSQL.5432*"
+	echo "-----If gpinitsystem report port has been used, Run this to clean:"
+	echo "-----rm -rf /tmp/*PGSQL.5432*"
 	echo "--------------------------------------------------------"
 
 	echo "============================== Start Init Greenplum Cluster =============================="
 	expect<<!
 	# set timeout 3600
-	spawn gpinitsystem -a -c gpinitsystem_config -h hostfile_gpinitsystem --su-password=${_PASSWORD} -n zh_CN.UTF-8
+	spawn gpinitsystem -a -c gpinitsystem_config -h hostfile_gpinitsystem --su_password=${_PASSWORD} -n zh_CN.UTF-8
 	expect {
 		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
 		">" { send "y\r"; exp_continue; }

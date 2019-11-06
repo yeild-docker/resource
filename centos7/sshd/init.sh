@@ -17,7 +17,7 @@ do
 	esac
 done
 
-yum install -y openssh-server passwd cracklib-dicts expect
+yum install -y openssh-server openssh-clients passwd cracklib-dicts expect
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 if [[ "$_PASSWORD" -ne "" ]]; then
@@ -59,5 +59,6 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 systemctl enable sshd
 systemctl start sshd
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then /usr/sbin/sshd; fi
 
 exit 0

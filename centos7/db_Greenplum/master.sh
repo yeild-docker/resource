@@ -27,8 +27,8 @@ done
 echo "============================== Init Greenplum Master =============================="
 echo "============================== Generate ssh-keygen of user: gpadmin =============================="
 su - gpadmin << SUEOF
-echo "-------------------------> Work with user: `whoami`"
-echo "-------------------------> Generate ssh-keygen of user: `whoami`"
+echo -e "-------------------------> Work with user: \c" && whoami
+echo -e "-------------------------> Generate ssh-keygen of user: \c" && whoami
 source ~/.bashrc
 rm -rf ~/.ssh/known_hosts
 expect<<!
@@ -48,7 +48,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 
 echo "============================== Enabling 1-n Passwordless SSH of user: gpadmin =============================="
 su - gpadmin << SUEOF
-echo "-------------------------> Work with user: `whoami`"
+echo -e "-------------------------> Work with user: \c" && whoami
 echo "-------------------------> Copy ssh-keygen to gpsdw1"
 expect<<!
 spawn ssh-copy-id -i ~/.ssh/id_rsa.pub `whoami`@gpsdw1
@@ -85,7 +85,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 
 echo "============================== Enabling n-n Passwordless SSH of user: gpadmin =============================="
 su - gpadmin << SUEOF
-echo "-------------------------> Work with user: `whoami`"
+echo -e "-------------------------> Work with user: \c" && whoami
 echo "-------------------------> Create config of exchange: hostfile_exkeys"
 if [ -f "hostfile_exkeys" ]; then
 	rm -rf hostfile_exkeys
@@ -112,7 +112,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 
 echo "============================== Configure Greenplum cluster =============================="
 su - gpadmin << SUEOF
-echo "-------------------------> Work with user: `whoami`"
+echo -e "-------------------------> Work with user: \c" && whoami
 if [ -f "hostfile" ]; then
 	rm -rf hostfile
 fi
@@ -157,6 +157,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 
 echo "============================== Prepare Init Greenplum Cluster =============================="
 su - gpadmin << SUEOF
+echo -e "-------------------------> Work with user: \c" && whoami
 source ~/.bashrc
 echo "-------------------------> Run test for segments"
 gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/primary -d ${_DATA}/mirror

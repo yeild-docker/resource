@@ -70,7 +70,7 @@ _GPPWD=admin96515
 _VM_SSHPWD=96515.cc
 wget -c https://github.com/greenplum-db/gpdb/releases/download/${_GPVERSION}/greenplum-db-${_GPVERSION}-rhel7-x86_64.rpm -O ${_GPPACK}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
-wget https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/db_Greenplum/single.sh -O single.sh
+# wget https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/db_Greenplum/single.sh -O single.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 9 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
 echo "-------------------------> Copy `pwd`/${_GPPACK} to /data/greenplum/share which shared to gpmaster"
 mkdir -p ${_MAP_HOST}/share
@@ -80,6 +80,7 @@ expect {
 	"overwrite" { send "y\r"; exp_continue; }
 	eof
 }
+!
 expect<<!
 spawn cp ./single.sh ${_MAP_HOST}/share/single.sh
 expect {

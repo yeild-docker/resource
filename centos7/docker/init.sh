@@ -22,14 +22,16 @@ done
 case $_CENTOS in
 	6)
 	yum install -y epel-release
-tee /etc/yum.repos.d/docker.repo <<-'EOF'
-[doockerrepo]
-name=Docker Repository
-baseurl=https://yum.dockerproject.org/repo/main/centos/6/
-enabled=1
-gpgcheck=1
-gpgkey=https://yum.dockerproject.org/gpg
-EOF
+	rm -rf /etc/yum.repos.d/docker*
+	tee /etc/yum.repos.d/docker.repo <<- EOF
+	[doockerrepo]
+	name=Docker Repository
+	baseurl=https://yum.dockerproject.org/repo/main/centos/6/
+	enabled=1
+	gpgcheck=1
+	gpgkey=https://yum.dockerproject.org/gpg
+	EOF
+	yum makecache fast
 	yum update -y
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 	yum -y install docker-engine
@@ -38,6 +40,7 @@ EOF
 	service docker start
 	;;
 	7)
+	rm -rf /etc/yum.repos.d/docker*
 	yum install -y yum-utils device-mapper-persistent-data lvm2
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail!"; exit $cmd_rs; fi
 	yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo

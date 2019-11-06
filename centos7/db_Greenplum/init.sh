@@ -158,7 +158,7 @@ sysctl -p
 
 echo "-------------------------> Configure envir of user gpadmin"
 su - gpadmin << EOF
-echo "-------------------------> Work with user: `whoami`"
+echo -e "-------------------------> Work with user: \c" && whoami
 _home=`pwd`
 if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ${_home}/.bashrc`" ]]; then
 	echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ${_home}/.bashrc"
