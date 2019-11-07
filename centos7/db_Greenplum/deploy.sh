@@ -17,10 +17,10 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then
 fi
 docker network create gpcluster
 cmd_rs=$?; if [ $cmd_rs -ne 0 ] && [ $cmd_rs -ne 1 ]; then echo "Create cluster network failed"; exit $cmd_rs; fi
-docker run -tid --privileged=true --restart=always --network=gpcluster -p 5432:5432 --name gpmaster centos:7 /usr/sbin/init
-docker run -tid --privileged=true --restart=always --network=gpcluster --name gpsdw1 centos:7 /usr/sbin/init
-docker run -tid --privileged=true --restart=always --network=gpcluster --name gpsdw2 centos:7 /usr/sbin/init
-docker run -tid --privileged=true --restart=always --network=gpcluster --name gpsdw3 centos:7 /usr/sbin/init
+docker run -tid --privileged=true --restart=always --network=gpcluster --add-host gpmaster:127.0.0.1 -p 5432:5432 --name gpmaster centos:7 /usr/sbin/init
+docker run -tid --privileged=true --restart=always --network=gpcluster --add-host gpsdw1:127.0.0.1 --name gpsdw1 centos:7 /usr/sbin/init
+docker run -tid --privileged=true --restart=always --network=gpcluster --add-host gpsdw2:127.0.0.1 --name gpsdw2 centos:7 /usr/sbin/init
+docker run -tid --privileged=true --restart=always --network=gpcluster --add-host gpsdw3:127.0.0.1 --name gpsdw3 centos:7 /usr/sbin/init
 
 _GPVERSION=6.0.1
 _GPPACK=greenplum-db-${_GPVERSION}.rpm

@@ -200,10 +200,26 @@ su - gpadmin <<- SUEOF
 	expect<<!
 	spawn ssh-keygen -t rsa -b 4096
 	expect {
-		"Overwrite" { send "y\r"; exp_continue; }
+		"Overwrite" { send "n\r"; exp_continue; }
 		"Enter file in which to save the key" { send "\r"; exp_continue; }
 		"Enter passphrase" { send "\r"; exp_continue; }
 		"Enter same passphrase agai" { send "\r"; exp_continue; }
+		eof
+	}
+	!
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
+	exit 0
+SUEOF
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
+
+su - gpadmin <<- SUEOF
+	echo -e "-------------------------> ssh-copy-id with user: \c" && whoami
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Fail: ${cmd_rs}!"; exit $cmd_rs; fi
+	expect<<!
+	spawn ssh-copy-id -i ~/.ssh/id_rsa.pub gpadmin@gpmaster
+	expect {
+		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue; }
+		"password:" { send "${_PASSWORD}\r"; exp_continue; }
 		eof
 	}
 	!
@@ -288,8 +304,8 @@ echo "============================== Prepare Init Greenplum Cluster ============
 su - gpadmin <<- SUEOF
 	echo -e "-------------------------> Work with user: \c" && whoami
 	source ~/.bashrc
-	echo "-------------------------> Run test for segments"
-	gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/primary -d ${_DATA}/mirror
+	# echo "-------------------------> Run test for segments"
+	gpcheckperf -f hostfile_gpssh_segonly -r ds -D -d ${_DATA}/sdw1/primary -d ${_DATA}/sdw1/mirror
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then echo "Exit with Test Failed!"; exit $cmd_rs; fi
 
 	echo "-------------------------> Config list of segment hosts which to init: 'hostfile_gpinitsystem'"
@@ -310,7 +326,7 @@ su - gpadmin <<- SUEOF
 	sed -i "s|^\(MASTER_DIRECTORY=\).*$|\1${_DATA}/master|g" ./gpinitsystem_config
 
 	sed -i "s|^[#]*[[:blank:]]*\(MIRROR_PORT_BASE=.*\)$|\1|g" ./gpinitsystem_config
-	sed -i "s|^[#]*[[:blank:]]*\(declare[[:blank:]]*-a[[:blank:]]*MIRROR_DATA_DIRECTORY=\).*$|\1(${_SEGMENTS})|g" ./gpinitsystem_config
+	sed -i "s|^[#]*[[:blank:]]*\(declare[[:blank:]]*-a[[:blank:]]*MIRROR_DATA_DIRECTORY=\).*$|\1(${_MIRRORS})|g" ./gpinitsystem_config
 
 	sed -i "s|^\(ENCODING=\).*$|\1UTF-8|g" ./gpinitsystem_config
 

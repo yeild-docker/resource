@@ -2,7 +2,7 @@
 _PASSWORD="admin96515"
 _PASSWORD_SSH="admin96515"
 _FILE=""
-_DATA="/data/gp"
+_DATA="/data/gpdata"
 
 while getopts ":hm:p:P:f:d:" opt
 do
@@ -144,12 +144,16 @@ net.ipv4.conf.all.arp_filter = 1
 # net.core.wmem_max = 2097152
 vm.swappiness = 10
 vm.zone_reclaim_mode = 0
+# 指定脏数据能存活的时间,毫秒
 vm.dirty_expire_centisecs = 500
+# 检查是否有缓存需要清理的间隔时间
 vm.dirty_writeback_centisecs = 100
-vm.dirty_background_ratio = 0
-vm.dirty_ratio = 0
-vm.dirty_background_bytes = 1610612736 # 1.5G
-vm.dirty_bytes = 4294967296 # 4G
+# 内存可以填充脏数据的百分比，这些脏数据稍后会写入磁盘
+vm.dirty_background_ratio = 5
+vm.dirty_background_bytes = 0
+# 可以用脏数据填充的绝对最大系统内存量，当系统到达此点时，必须将所有脏数据提交到磁盘
+vm.dirty_ratio = 20
+vm.dirty_bytes = 0
 
 EOF
 fi
@@ -159,22 +163,21 @@ sysctl -p
 echo "-------------------------> Configure envir of user gpadmin"
 su - gpadmin << EOF
 echo -e "-------------------------> Work with user: \c" && whoami
-_home=`pwd`
-if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ${_home}/.bashrc`" ]]; then
-	echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ${_home}/.bashrc"
-	echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ${_home}/.bashrc
+if [[ ! "`grep '^source /usr/local/greenplum-db/greenplum_path.sh$' ~/.bashrc`" ]]; then
+	echo "-------------------------> Add 'source /usr/local/greenplum-db/greenplum_path.sh' to ~/.bashrc"
+	echo -e "\nsource /usr/local/greenplum-db/greenplum_path.sh\n" >> ~/.bashrc
 fi
-if [[ ! "`grep '^export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj$' ${_home}/.bashrc`" ]]; then
-	echo "-------------------------> Add 'export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj' to ${_home}/.bashrc"
-	echo -e "export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj\n" >> ${_home}/.bashrc
+if [[ ! "`grep '^export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj$' ~/.bashrc`" ]]; then
+	echo "-------------------------> Add 'export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj' to ~/.bashrc"
+	echo -e "export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj\n" >> ~/.bashrc
 fi
-if [[ ! "`grep '^export PG_OOM_ADJUST_VALUE=0$' ${_home}/.bashrc`" ]]; then
-	echo "-------------------------> Add 'export PG_OOM_ADJUST_VALUE=0' to ${_home}/.bashrc"
-	echo -e "export PG_OOM_ADJUST_VALUE=0\n" >> ${_home}/.bashrc
+if [[ ! "`grep '^export PG_OOM_ADJUST_VALUE=0$' ~/.bashrc`" ]]; then
+	echo "-------------------------> Add 'export PG_OOM_ADJUST_VALUE=0' to ~/.bashrc"
+	echo -e "export PG_OOM_ADJUST_VALUE=0\n" >> ~/.bashrc
 fi
-if [[ ! "`grep '^export MASTER_DATA_DIRECTORY=.*$' ${_home}/.bashrc`" ]]; then
-	echo "-------------------------> Add 'export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1' to ${_home}/.bashrc"
-	echo -e "export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1\n" >> ${_home}/.bashrc
+if [[ ! "`grep '^export MASTER_DATA_DIRECTORY=.*$' ~/.bashrc`" ]]; then
+	echo "-------------------------> Add 'export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1' to ~/.bashrc"
+	echo -e "export MASTER_DATA_DIRECTORY=${_DATA}/master/gpseg-1\n" >> ~/.bashrc
 fi
 
 source ~/.bashrc
