@@ -15,7 +15,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 rm -rf auth && git clone https://github.com/yeild-web/certbot-letencrypt-wildcardcertificates-alydns-au.git auth && sed -i 's/^\(ALY_KEY="\).*\("\)$/\1LTAI4Ft38EVexsBP35NE7SVD\2/g' auth/au.sh && sed -i 's/^\(ALY_TOKEN="\).*\("\)$/\1XgKxJignZvIHxEJj5SSYiUKgTk0tJX\2/g' auth/au.sh
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
-/usr/local/bin/certbot-auto certonly --email 935057137@qq.com -d *.yeild.top --manual --preferred-challenges dns --server https://acme-v02.api.letsencrypt.org/directory --manual-auth-hook ${_HOME}'/auth/au.sh python aly add' --manual-cleanup-hook ${_HOME}'/auth/au.sh python aly clean' --agree-tos --manual-public-ip-logging-ok --noninteractive --no-bootstrap
+/usr/local/bin/certbot-auto certonly --email 935057137@qq.com -d *.yeild.top --manual --rsa-key-size 4096 --preferred-challenges dns --server https://acme-v02.api.letsencrypt.org/directory --manual-auth-hook ${_HOME}'/auth/au.sh python aly add' --manual-cleanup-hook ${_HOME}'/auth/au.sh python aly clean' --agree-tos --manual-public-ip-logging-ok --noninteractive --no-bootstrap
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 openssl x509 -in  /etc/letsencrypt/live/yeild.top/cert.pem -noout -text
