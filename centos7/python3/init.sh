@@ -1,6 +1,6 @@
 path=/usr/local/python3
 openssl=/usr/local/openssl
-with-openssl=--with-openssl=$openssl
+with-openssl='--with-openssl=$openssl'
 
 if [ ! -d $openssl ]; then
 	echo "Install openssl to ${openssl}"
