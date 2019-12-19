@@ -1,5 +1,5 @@
-path=/usr/local/python3
-openssl=/usr/local/openssl
+path='/usr/local/python3'
+openssl='/usr/local/openssl'
 with-openssl='--with-openssl=$openssl'
 
 if [ ! -d $openssl ]; then
