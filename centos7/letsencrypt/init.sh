@@ -33,4 +33,9 @@ systemctl start crond
 # wget git expect openssl-devel python-devel python-tools libffi-devel python-virtualenv
 # yum history undo -y `yum history list git | awk 'NR==4{print $1}'`
 
+echo "========================== Add the nginx conf ======================="
+echo "    ssl_certificate /etc/letsencrypt/live/133.yeild.top/fullchain.pem;"
+echo "    ssl_certificate_key /etc/letsencrypt/live/133.yeild.top/privkey.pem;"
+echo "    ssl_trusted_certificate /etc/letsencrypt/live/133.yeild.top/chain.pem;"
+
 exit 0
