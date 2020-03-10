@@ -1,10 +1,11 @@
 nginx_path=/usr/local/nginx
 
 nginx -v
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then
+if [ $? -ne 0 ]; then
+	nginx_ver=1.17.9
 	yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	wget https://nginx.org/download/nginx-1.16.1.tar.gz -O nginx-1.16.1.tar.gz && tar -zxvf nginx-1.16.1.tar.gz && cd nginx-1.16.1 && ./configure --prefix=$nginx_path && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile && cd .. && rm -rf nginx-1.16.1*
+	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile && cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 
