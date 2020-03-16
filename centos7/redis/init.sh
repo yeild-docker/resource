@@ -19,8 +19,9 @@ cd $workhome
 
 yum install -y wget gcc make automake expect
  # gcc-c++ make zlib zlib-devel libffi libffi-devel openssl openssl-devel
-wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz && tar -zxvf redis-${redis_ver}.tar.gz && cd redis-${redis_ver} && make -j8 && make install PREFIX=${path} && mkdir -p ${path}/conf && cp redis.conf ${path}/conf/
+wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz && tar -zxvf redis-${redis_ver}.tar.gz && cd redis-${redis_ver} && make -j8 && make install PREFIX=${path}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+mkdir -p ${path}/conf && cp redis.conf ${path}/conf/
 sed -i "s|^\(bind.*\)$|#\1|g" ${path}/conf/redis.conf
 sed -i "s|^.*\(daemonize[[:blank:]]\)[a-z]*$|\1 yes|g" ${path}/conf/redis.conf
 sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" ${path}/conf/redis.conf
