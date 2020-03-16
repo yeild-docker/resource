@@ -1,4 +1,3 @@
-
 _HOME=/usr/local/letsencrypt
 
 mkdir -p $_HOME
@@ -23,12 +22,11 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 /usr/local/bin/certbot-auto renew  --manual --preferred-challenges dns --manual-auth-hook ${_HOME}'/auth/au.sh python aly add' --manual-cleanup-hook ${_HOME}'/auth/au.sh python aly clean' --dry-run
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-echo "0 2 */2 * * root /usr/local/bin/certbot-auto renew --manual --preferred-challenges dns --manual-auth-hook '${_HOME}/auth/au.sh python aly add' --manual-cleanup-hook '${_HOME}/auth/au.sh python aly clean'" | tee -a /etc/crontab > /dev/null
+cron_job="0 2 */2 * * root /usr/local/bin/certbot-auto renew --manual --preferred-challenges dns --manual-auth-hook '${_HOME}/auth/au.sh python aly add' --manual-cleanup-hook '${_HOME}/auth/au.sh python aly clean'"
+(crontab -l |grep -v ".*certbot-auto.*"; echo "${cron_job}") | crontab -
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
-systemctl enable crond
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-systemctl start crond
+systemctl enable crond && systemctl start crond
 
 # wget git expect openssl-devel python-devel python-tools libffi-devel python-virtualenv
 # yum history undo -y `yum history list git | awk 'NR==4{print $1}'`

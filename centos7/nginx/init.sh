@@ -1,14 +1,61 @@
 nginx_path=/usr/local/nginx
 
-nginx -v
+nginx_v=`nginx -v 2>&1`
 if [ $? -ne 0 ]; then
 	nginx_ver=1.17.9
 	yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path && make && make install && echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile && cd .. && rm -rf nginx-${nginx_ver}*
+	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path && make && make install && cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	
+	if [[ ! "`grep "export PATH=.*/usr/local/nginx/sbin.*" /etc/profile`" ]]; then
+		echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile
+	fi
 fi
 
+sys_version=`cat /etc/$system-release|awk '{print $(NF-1)}'|awk -F . '{print $1"."$2}'`
+if [[ "$sys_version" == 6.* ]]; then
+	echo "Add Nginx Control to service"
+  cat << EOF > "/etc/init.d/nginx"
+#!/bin/bash
+#
+# Nginx control service
+#
+
+start() {
+  ${nginx_path}/sbin/nginx -t && ${nginx_path}/sbin/nginx
+  return $?
+}
+
+stop() {
+  ${nginx_path}/sbin/nginx -s stop
+  return $?
+}
+
+case "\$1" in
+start)
+        start
+        ;;
+
+stop)
+        stop
+        ;;
+restart)
+        stop
+        start
+        ;;
+reload)
+        ${nginx_path}/sbin/nginx -t && ${nginx_path}/sbin/nginx -s reload
+        ;;
+*)
+        echo "Usage:service nginx {start|stop|reload|restart}" >&2
+esac
+EOF
+	chmod 777 /etc/init.d/nginx
+	chkconfig --add /etc/init.d/nginx
+	service nginx start
+elif [[ "$sys_version" == 7.* ]]; then
+	echo "Add Nginx Control to systemctl"
 cat << EOF > "/lib/systemd/system/nginx.service"
 [Unit]
 Description=The nginx HTTP and reverse proxy server
@@ -20,7 +67,7 @@ PIDFile=${nginx_path}/logs/nginx.pid
 # Nginx will fail to start if ${nginx_path}/log/nginx.pid already exists but has the wrong
 # SELinux context. This might happen when running `nginx -t` from the cmdline.
 # https://bugzilla.redhat.com/show_bug.cgi?id=1268621
-#ExecStartPre=/usr/bin/rm -f ${nginx_path}/logs/nginx.pid
+ExecStartPre=/usr/bin/rm -rf ${nginx_path}/logs/nginx.pid
 ExecStartPre=${nginx_path}/sbin/nginx -t
 ExecStart=${nginx_path}/sbin/nginx
 ExecReload=${nginx_path}/sbin/nginx -s reload
@@ -33,7 +80,11 @@ PrivateTmp=true
 [Install]
 WantedBy=multi-user.target
 EOF
-chmod 755 /lib/systemd/system/nginx.service
-systemctl enable nginx
-systemctl start nginx
+	chmod 755 /lib/systemd/system/nginx.service
+	systemctl enable nginx
+	systemctl start nginx
+else
+	exit 1
+fi
+
 exit 0
