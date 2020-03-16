@@ -47,10 +47,9 @@ if [[ ! "`grep "export PATH=.*${path}/bin.*" /etc/profile`" ]]; then
 	source /etc/profile
 fi
 mv /etc/init.d/redis_6379 ${path}/bin/redisd
-cat <<- EOF > "$service_path"
+cat <<- EOF > "/usr/lib/systemd/system/redisd.service"
     [Unit]
-    Description=Restfull Api service with uWSGI for $service
-    After=network.target remote-fs.target nss-lookup.target
+    Description=Redis Server with Port 6379
 
     [Service]
     Type=forking
@@ -66,5 +65,11 @@ cat <<- EOF > "$service_path"
     [Install]
     WantedBy=multi-user.target
 EOF
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+systemctl enable redisd
+
+echo "Install Redis to '${path}' Successed!"
+echo "`redis-server -v`"
+echo "Start the redis with 'systemctl start redisd'"
 
 exit 0
