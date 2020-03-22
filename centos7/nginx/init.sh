@@ -5,7 +5,7 @@ if [ $? -ne 0 ]; then
 	nginx_ver=1.17.9
 	yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path && make && make install && cd .. && rm -rf nginx-${nginx_ver}*
+	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path --with-http_ssl_module --with-http_v2_module && make && make install && cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	
 	if [[ ! "`grep "export PATH=.*/usr/local/nginx/sbin.*" /etc/profile`" ]]; then
