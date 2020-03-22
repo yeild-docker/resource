@@ -13,6 +13,21 @@ if [ $? -ne 0 ]; then
 	fi
 fi
 
+core=`uname -a`
+# Darwin Linux
+core=${core%% *}
+if [ $core = "Linux" ]
+  then
+    if [ -e /etc/centos-release ];then
+      system=centos
+      yum install -y expect
+   elif [ -e /etc/redhat-release ];then
+     system=redhat
+    else
+      echo "Other liunx versions"
+      exit 1
+    fi
+fi
 sys_version=`cat /etc/$system-release|awk '{print $(NF-1)}'|awk -F . '{print $1"."$2}'`
 if [[ "$sys_version" == 6.* ]]; then
 	echo "Add Nginx Control to service"
