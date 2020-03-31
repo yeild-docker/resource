@@ -1,14 +1,20 @@
 nginx_path=/usr/local/nginx
+openssl="/usr/local/openssl"
 
 nginx_v=`nginx -v 2>&1`
 if [ $? -ne 0 ]; then
+	if [ ! -d $openssl ]; then
+		echo "Install openssl to ${openssl}"
+		curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/openssl/init.sh" | sh
+		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	fi
 	nginx_ver=1.17.9
 	yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	sed -i 's|^\(.*$OPENSSL/\)\.openssl/\(.*\)$|\1\2|g' auto/lib/openssl/conf
-	cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_gunzip_module --with-http_gzip_static_module --with-stream --with-openssl=/usr/local/openssl && make && make install
+	cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_gunzip_module --with-http_gzip_static_module --with-stream --with-openssl=${openssl} && make && make install
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
