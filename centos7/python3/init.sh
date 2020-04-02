@@ -19,5 +19,13 @@ if [[ ! "`grep "export PATH=.*${path}/bin.*" /etc/profile`" ]]; then
 	echo "export PATH=\$PATH:${path}/bin" >> /etc/profile
 	source /etc/profile
 fi
+if [[ ! "`grep "export LD_LIBRARY_PATH=.*${path}/lib.*" /etc/profile`" ]]; then
+	echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${path}/lib" >> /etc/profile
+	source /etc/profile
+fi
+if [[ ! "`grep "export LIBRARY_PATH=.*${path}/lib.*" /etc/profile`" ]]; then
+	echo "export LIBRARY_PATH=\$LIBRARY_PATH:${path}/lib" >> /etc/profile
+	source /etc/profile
+fi
 
 exit 0

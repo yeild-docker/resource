@@ -13,6 +13,10 @@ if [[ ! "`grep "export LD_LIBRARY_PATH=.*${path}/lib.*" /etc/profile`" ]]; then
 	echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${path}/lib" >> /etc/profile
 	source /etc/profile
 fi
+if [[ ! "`grep "export LIBRARY_PATH=.*${path}/lib.*" /etc/profile`" ]]; then
+	echo "export LIBRARY_PATH=\$LIBRARY_PATH:${path}/lib" >> /etc/profile
+	source /etc/profile
+fi
 ln -s ${path}/lib/libssl.so.1.1 /usr/lib64/libssl.so.1.1
 ln -s ${path}/lib/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1
 
