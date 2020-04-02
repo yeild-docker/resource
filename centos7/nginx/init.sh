@@ -14,7 +14,7 @@ if [ $? -ne 0 ]; then
 	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz && tar -zxvf nginx-${nginx_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	sed -i 's|^\(.*$OPENSSL/\)\.openssl/\(.*\)$|\1\2|g' auto/lib/openssl/conf
-	cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_gunzip_module --with-http_gzip_static_module --with-stream --with-openssl=${openssl} && make && make install
+	cd nginx-${nginx_ver} && ./configure --prefix=$nginx_path --user=www --group=www --with-http_stub_status_module --with-http_sub_module --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_gunzip_module --with-http_gzip_static_module --with-stream --with-stream_ssl_module --with-openssl=${openssl} --with-openssl-opt='enable-weak-ssl-ciphers' && make && make install
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi

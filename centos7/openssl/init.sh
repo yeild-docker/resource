@@ -1,7 +1,8 @@
 path="/usr/local/openssl"
+openssl_ver="1.1.1f"
 
 yum install -y wget gcc make zlib zlib-devel
-wget -c http://www.openssl.org/source/openssl-1.1.1.tar.gz -O openssl-1.1.1.tar.gz && tar -zxvf openssl-1.1.1.tar.gz && cd openssl-1.1.1 && ./config --prefix=${path} shared zlib && make && make install && cd .. && rm -rf openssl-1.1.1*
+wget -c http://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz && tar -zxvf openssl-${openssl_ver}.tar.gz && cd openssl-${openssl_ver} && ./config --prefix=${path} shared zlib && make && make install && cd .. && rm -rf openssl-${openssl_ver}*
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 if [[ ! "`grep "export PATH=.*${path}/bin.*" /etc/profile`" ]]; then
