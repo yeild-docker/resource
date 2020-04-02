@@ -11,7 +11,7 @@ yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel
 wget -c https://www.python.org/ftp/python/3.7.6/Python-3.7.6.tgz -O Python-3.7.6.tgz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf Python-3.7.6.tgz && cd Python-3.7.6
-./configure --enable-shared --enable-optimizations --enable-loadable-sqlite-extensions --prefix=${path} ${with_openssl}
+./configure --enable-shared --enable-optimizations --enable-loadable-sqlite-extensions --with-system-expat --with-system-ffi --with-ensurepip=yes --prefix=${path} ${with_openssl}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
 make -j $processor && make install
