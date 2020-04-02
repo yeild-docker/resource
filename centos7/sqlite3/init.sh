@@ -16,5 +16,9 @@ ln -s ${path}/bin/sqlite3 /usr/bin/sqlite3
 if [[ ! "`grep "${path}/lib/.*" /etc/ld.so.conf.d/sqlite3.conf`" ]]; then
 	echo "${path}/lib/" >> /etc/ld.so.conf.d/sqlite3.conf && ldconfig
 fi
+if [[ ! "`grep "export LD_LIBRARY_PATH=.*${path}/lib.*" /etc/profile`" ]]; then
+	echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${path}/lib" >> /etc/profile
+	source /etc/profile
+fi
 
 exit 0
