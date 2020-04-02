@@ -2,7 +2,15 @@ path="/usr/local/openssl"
 openssl_ver="1.1.1f"
 
 yum install -y wget gcc make zlib zlib-devel
-wget -c http://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz && tar -zxvf openssl-${openssl_ver}.tar.gz && cd openssl-${openssl_ver} && ./config --prefix=${path} shared zlib && make && make install && cd .. && rm -rf openssl-${openssl_ver}*
+wget -c http://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+tar -zxvf openssl-${openssl_ver}.tar.gz && cd openssl-${openssl_ver}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+./config --prefix=${path} shared zlib
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
+make -j $processor && make install
+cd .. && rm -rf openssl-${openssl_ver}*
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 
 if [[ ! "`grep "export PATH=.*${path}/bin.*" /etc/profile`" ]]; then

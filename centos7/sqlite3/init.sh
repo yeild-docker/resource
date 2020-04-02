@@ -8,7 +8,15 @@ if [ ! -d $openssl ]; then
 	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/openssl/init.sh" | sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
-wget -c https://www.sqlite.org/2020/sqlite-autoconf-${sqlite3_ver}.tar.gz -O sqlite-autoconf-${sqlite3_ver}.tar.gz && tar -zxvf sqlite-autoconf-${sqlite3_ver}.tar.gz && cd sqlite-autoconf-${sqlite3_ver} && CFLAGS="-Os -DSQLITE_THREADSAFE=2" ./configure --prefix=${path}&& make -j8 && make install && cd .. && rm -rf sqlite-autoconf-${sqlite3_ver}*
+wget -c https://www.sqlite.org/2020/sqlite-autoconf-${sqlite3_ver}.tar.gz -O sqlite-autoconf-${sqlite3_ver}.tar.gz
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+tar -zxvf sqlite-autoconf-${sqlite3_ver}.tar.gz && cd sqlite-autoconf-${sqlite3_ver}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+CFLAGS="-Os -DSQLITE_THREADSAFE=2" ./configure --prefix=${path}
+cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
+make -j $processor && make install
+cd .. && rm -rf sqlite-autoconf-${sqlite3_ver}*
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 mv /usr/bin/sqlite3  /usr/bin/sqlite3_old
 ln -s ${path}/bin/sqlite3 /usr/bin/sqlite3
