@@ -52,6 +52,7 @@ if [[ "$sys_version" == 6.* ]]; then
 #!/bin/bash
 #
 # Nginx control service
+# chkconfig: 2345 10 90
 #
 
 start() {
