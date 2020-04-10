@@ -1,5 +1,8 @@
 _HOME=/usr/local/letsencrypt
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 mkdir -p $_HOME
 cd $_HOME
 

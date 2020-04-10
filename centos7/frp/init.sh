@@ -1,5 +1,8 @@
 path="/usr/local/frp"
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 wget -c https://github.com/fatedier/frp/releases/download/v0.32.1/frp_0.32.1_linux_amd64.tar.gz -O frp.tar.gz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf frp.tar.gz && \mv -f ./frp $path

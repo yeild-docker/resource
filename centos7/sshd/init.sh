@@ -17,6 +17,9 @@ do
 	esac
 done
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 yum install -y openssh-server openssh-clients passwd cracklib-dicts expect
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 

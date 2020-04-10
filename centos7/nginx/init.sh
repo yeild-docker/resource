@@ -1,6 +1,9 @@
 nginx_path=/usr/local/nginx
 openssl="/usr/local/openssl"
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 nginx_v=`nginx -v 2>&1`
 if [ $? -ne 0 ]; then
 	if [ ! -d $openssl ]; then
@@ -25,8 +28,8 @@ if [ $? -ne 0 ]; then
 	cd .. && rm -rf nginx-${nginx_ver}*
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	
-	if [[ ! "`grep "export PATH=.*/usr/local/nginx/sbin.*" /etc/profile`" ]]; then
-		echo "export PATH=/usr/local/nginx/sbin:\$PATH" >> /etc/profile && source /etc/profile
+	if [[ ! "`grep "export PATH=.*$nginx_path/sbin.*" /etc/profile`" ]]; then
+		echo "export PATH=$nginx_path/sbin:\$PATH" >> /etc/profile && source /etc/profile
 	fi
 fi
 

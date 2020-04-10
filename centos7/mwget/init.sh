@@ -1,4 +1,7 @@
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 yum install -y wget gcc-c++ bzip2 intltool make openssl openssl-devel
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 

@@ -1,6 +1,9 @@
 path="/usr/local/sqlite3"
 openssl="/usr/local/openssl"
 
+workhome=`cd $(dirname $0); pwd -P`
+cd $workhome
+
 yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel
 sqlite3_ver=3310100
 if [ ! -d $openssl ]; then
