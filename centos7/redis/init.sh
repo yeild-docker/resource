@@ -1,6 +1,6 @@
 path="/usr/local/redis"
 redis_ver="5.0.8"
-_password="96515.cc"
+_password=""
 
 while getopts "p:" opt
 do
