@@ -26,10 +26,12 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
 make -j $processor && make install PREFIX=${path}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-sed -i "s|^\(bind.*\)$|#\1|g" ${path}/conf/redis.conf
+sed -i "s|^\(bind.*\)$|#\1|g" redis.conf
 sed -i "s|^.*\(daemonize[[:blank:]]\)[a-z]*$|\1 yes|g" redis.conf
 sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" redis.conf
-sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" redis.conf
+if [[ "$_PASSWORD" -ne "" ]]; then
+	sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" redis.conf
+fi
 mkdir -p ${path}/conf && cp -p redis.conf ${path}/conf/
 cd utils
 expect<<!

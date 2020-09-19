@@ -6,6 +6,7 @@ python_version=3.7.7
 
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
+source /etc/profile
 
 if [ ! -d $openssl ]; then
 	echo "Install openssl to ${openssl}"
@@ -21,7 +22,7 @@ yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel expat e
 wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf Python-${python_version}.tgz && cd Python-${python_version}
-./configure LDFLAGS="-L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-optimizations --enable-loadable-sqlite-extensions --with-system-expat --with-system-ffi --with-ensurepip=yes --prefix=${path} ${with_openssl}
+./configure LDFLAGS="-L${openssl}/lib -L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-optimizations --enable-loadable-sqlite-extensions --with-system-expat --with-system-ffi --with-ensurepip=yes --prefix=${path} ${with_openssl}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 2 / 3 + 1`
 make -j $processor && make install

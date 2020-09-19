@@ -1,16 +1,20 @@
 #!/bin/bash
+_USER=""
 _PASSWORD=""
 
-while getopts ":hp:" opt
+while getopts ":hu:p:" opt
 do
 	case $opt in
 		h)
 		echo "Usage of Options:"
 		echo "-h help"
-		echo "-p password of root user."
+		echo "-u user."
+		echo "-p password of user."
 			;;
 		p)
 		_PASSWORD=$OPTARG ;;
+		u)
+		_USER=$OPTARG ;;
 		?)
 		echo "Unsurported Option -${opt}"
 		exit 1 ;;
