@@ -12,14 +12,16 @@ if [ $? -ne 0 ]; then
 		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	fi
 	nginx_ver=1.17.9
-	yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	tar -zxvf nginx-${nginx_ver}.tar.gz
-	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	sed -i 's|^\(.*$OPENSSL/\)\.openssl/\(.*\)$|\1\2|g' auto/lib/openssl/conf
+	if [ ! -d nginx-${nginx_ver} ]; then
+		yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
+		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+		wget https://nginx.org/download/nginx-${nginx_ver}.tar.gz -O nginx-${nginx_ver}.tar.gz
+		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+		tar -zxvf nginx-${nginx_ver}.tar.gz
+		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	fi
 	cd nginx-${nginx_ver}
+	sed -i 's|^\(.*$OPENSSL/\)\.openssl/\(.*\)$|\1\2|g' auto/lib/openssl/conf
 	./configure --prefix=$nginx_path --user=www --group=www --with-http_stub_status_module --with-http_sub_module --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_gunzip_module --with-http_gzip_static_module --with-stream --with-stream_ssl_module --with-openssl=${openssl} --with-openssl-opt='enable-weak-ssl-ciphers'
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
