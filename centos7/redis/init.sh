@@ -26,11 +26,11 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
 make -j $processor && make install PREFIX=${path}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-mkdir -p ${path}/conf && cp redis.conf ${path}/conf/
 sed -i "s|^\(bind.*\)$|#\1|g" ${path}/conf/redis.conf
-sed -i "s|^.*\(daemonize[[:blank:]]\)[a-z]*$|\1 yes|g" ${path}/conf/redis.conf
-sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" ${path}/conf/redis.conf
-sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" ${path}/conf/redis.conf
+sed -i "s|^.*\(daemonize[[:blank:]]\)[a-z]*$|\1 yes|g" redis.conf
+sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" redis.conf
+sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" redis.conf
+mkdir -p ${path}/conf && cp -p redis.conf ${path}/conf/
 cd utils
 expect<<!
 spawn ./install_server.sh
