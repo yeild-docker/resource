@@ -1,0 +1,6 @@
+docker run -tid --privileged=true --restart=always -v /mnt/pg/soft:/mnt/soft/ -v /mnt/pg/dbnode1:/data/pgsql -p 5441:5432 --name dbnode1 centos:6.7
+docker run -tid --privileged=true --restart=always -v /mnt/pg/soft:/mnt/soft/ -v /mnt/pg/dbnode2:/data/pgsql -p 5442:5432 --name dbnode2 centos:6.7
+docker run -tid --privileged=true --restart=always -v /mnt/pg/soft:/mnt/soft/ -v /mnt/pg/dbnode3:/data/pgsql -p 5443:5432 --name dbnode3 centos:6.7
+docker exec -ti dbnode1 /bin/bash
+cd /mnt/pg/soft
+wget https://ftp.postgresql.org/pub/source/v9.3.25/postgresql-9.3.25.tar.gz -O postgresql-9.3.25.tar.gz

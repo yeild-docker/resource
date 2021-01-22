@@ -1,0 +1,46 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "access": "/var/log/v2ray/access.log", 
+    "error": "/var/log/v2ray/error.log"
+  },
+  "inbounds": [{
+    "port": 28042,
+    "listen": "127.0.0.1",
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "26b66934-b593-4664-896e-e4c37e3b0dec",
+          "level": 1,
+          "alterId": 64
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "ws",
+      "wsSettings": {
+        "path": "/yeild/ray"
+      }
+    }
+  }],
+  "outbounds": [{
+    "protocol": "freedom",
+    "settings": {}
+  },{
+    "protocol": "blackhole",
+    "settings": {},
+    "tag": "blocked"
+  }],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+        	"geoip:private"
+        ],
+        "outboundTag": "blocked"
+      }
+    ]
+  }
+}
