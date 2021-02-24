@@ -28,20 +28,23 @@ source /etc/profile
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
-yum -y install gcc gcc-c++ automake make pam-devel openldap-devel cyrus-sasl-devel openssl-devel
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-version=ss5-3.8.9
-wget http://sourceforge.net/projects/ss5/files/ss5/3.8.9-8/ss5-3.8.9-8.tar.gz -O $version.tar.gz
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-tar zxvf $version.tar.gz && cd $version && ./configure && make && make install && cd .. && rm -rf $version
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+which ss5 >> /dev/null 2>&1
+if [ $? -ne 0 ]; then
+	yum -y install gcc gcc-c++ automake make pam-devel openldap-devel cyrus-sasl-devel openssl-devel
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	version=ss5-3.8.9
+	wget http://sourceforge.net/projects/ss5/files/ss5/3.8.9-8/ss5-3.8.9-8.tar.gz -O $version.tar.gz
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	tar zxvf $version.tar.gz && cd $version && ./configure && make && make install && cd .. && rm -rf $version
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+fi
 auth='-' && [[ $_user != '-' ]] && auth='u'
 sed -i "s|^#.*\(auth[^0]*0\.0\.0\.0/0[^-]*-[^-]*\)-\(.*\)$|\1$auth\2|g" /etc/opt/ss5/ss5.conf
 sed -i "s|^#.*\(permit[^-]*\)-\([^0]*0\.0\.0\.0/0[^-]*-[^0]*0\.0\.0\.0/0[^-]*-.*\)$|\1$auth\2|g" /etc/opt/ss5/ss5.conf
 
 [[ $_user != '-' ]] && [[ ! "`grep "^$_user .*" /etc/opt/ss5/ss5.passwd`" ]] && echo "$_user $_password" >> /etc/opt/ss5/ss5.passwd
 
-sed -i "s|#\(SS5_OPTS=\" -u root\)\"|\1 -b 0.0.0.0:$_port\"|g" /etc/sysconfig/ss5
+sed -i "s|#*\(SS5_OPTS=\" -u root\).*\"|\1 -b 0.0.0.0:$_port\"|g" /etc/sysconfig/ss5
 
 firewall-cmd --zone=public --add-port=$_port/tcp --permanent
 firewall-cmd --reload
