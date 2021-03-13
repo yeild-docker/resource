@@ -19,7 +19,8 @@ cd $workhome
 
 yum install -y wget gcc make automake expect
  # gcc-c++ make zlib zlib-devel libffi libffi-devel openssl openssl-devel
-wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+# wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+curl -C -O http://download.redis.io/releases/redis-${redis_ver}.tar.gz -o redis-${redis_ver}.tar.gz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf redis-${redis_ver}.tar.gz && cd redis-${redis_ver}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
