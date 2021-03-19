@@ -19,8 +19,7 @@ if [ ! -d $sqlite3 ]; then
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel expat expat-devel
-# wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
-curl -O -C - https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -o Python-${python_version}.tgz
+wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf Python-${python_version}.tgz && cd Python-${python_version}
 ./configure LDFLAGS="-L${openssl}/lib -L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-optimizations --enable-loadable-sqlite-extensions --with-system-expat --with-system-ffi --with-ensurepip=yes --prefix=${path} ${with_openssl}
