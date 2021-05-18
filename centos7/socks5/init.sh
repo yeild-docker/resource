@@ -7,7 +7,7 @@ while getopts "p:U:P:" opt
 do
 	case $opt in
 		p)
-		port=$OPTARG ;;
+		_port=$OPTARG ;;
 		U)
 		_user=$OPTARG ;;
 		P)
