@@ -10,12 +10,12 @@ source /etc/profile
 
 if [ ! -d $openssl ]; then
 	echo "Install openssl to ${openssl}"
-	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/openssl/init.sh" | sh
+	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 if [ ! -d $sqlite3 ]; then
 	echo "Install sqlite3 to ${sqlite3}"
-	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/sqlite3/init.sh" | sh
+	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel expat expat-devel
