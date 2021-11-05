@@ -8,7 +8,7 @@ yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel
 sqlite3_ver=3360000
 if [ ! -d $openssl ]; then
 	echo "Install openssl to ${openssl}"
-	curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/openssl/init.sh" | sh
+	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 wget --no-check-certificate -c https://www.sqlite.org/2021/sqlite-autoconf-${sqlite3_ver}.tar.gz -O sqlite-autoconf-${sqlite3_ver}.tar.gz
