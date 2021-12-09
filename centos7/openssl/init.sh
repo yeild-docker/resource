@@ -1,5 +1,5 @@
 path="/usr/local/openssl"
-openssl_ver="1.1.1f"
+openssl_ver="1.1.1l"
 
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
