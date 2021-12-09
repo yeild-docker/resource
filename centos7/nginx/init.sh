@@ -11,7 +11,7 @@ if [ $? -ne 0 ]; then
 		curl -fsSL "https://raw.githubusercontent.com/yeild-docker/resource/master/centos7/openssl/init.sh" | sh
 		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	fi
-	nginx_ver=1.17.9
+	nginx_ver=1.21.4
 	if [ ! -d nginx-${nginx_ver} ]; then
 		yum install -y wget gcc gcc-c++ make pcre pcre-devel zlib zlib-devel
 		cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
