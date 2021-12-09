@@ -5,7 +5,7 @@ workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
 yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel
-sqlite3_ver=3360000
+sqlite3_ver=3370000
 if [ ! -d $openssl ]; then
 	echo "Install openssl to ${openssl}"
 	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh
