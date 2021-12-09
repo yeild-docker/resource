@@ -5,7 +5,7 @@ workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
 yum install -y wget gcc make zlib zlib-devel perl
-wget -c http://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
+wget -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf openssl-${openssl_ver}.tar.gz && cd openssl-${openssl_ver}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
