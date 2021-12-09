@@ -23,7 +23,7 @@ wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_vers
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 tar -zxvf Python-${python_version}.tgz && cd Python-${python_version}
 #  --enable-optimizations
-./configure LDFLAGS="-L${openssl}/lib -L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-loadable-sqlite-extensions --with-system-expat --with-system-ffi --with-ensurepip=yes --with-lto --prefix=${path} ${with_openssl}
+./configure LDFLAGS="-L${openssl}/lib -L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-loadable-sqlite-extensions --enable-optimizations --with-system-expat --with-system-ffi --with-ensurepip=yes --with-lto --prefix=${path} ${with_openssl}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 2 / 3 + 1`
 make -j $processor && make install
