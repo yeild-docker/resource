@@ -2,7 +2,7 @@ path="/usr/local/python3"
 openssl="/usr/local/openssl"
 sqlite3="/usr/local/sqlite3"
 with_openssl="--with-openssl=${openssl}"
-python_version=3.7.7
+python_version=3.9.9
 
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
