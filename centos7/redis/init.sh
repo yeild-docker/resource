@@ -1,5 +1,5 @@
 path="/usr/local/redis"
-redis_ver="5.0.9"
+redis_ver="6.2.6"
 _password=""
 
 while getopts "p:" opt
