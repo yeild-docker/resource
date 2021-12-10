@@ -4,23 +4,95 @@ sqlite3="/usr/local/sqlite3"
 with_openssl="--with-openssl=${openssl}"
 python_version=3.9.9
 
+_required_packages='wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel expat expat-devel'
+_trans_args=""
+_run_mode="normal"
+_with_upgrade=0
+
+args_help=$(cat <<- EOF
+$0 参数说明：
+    -U 升级
+    -offline 离线安装，使用--download下载的文件安装
+    -download 下载安装文件以供离线安装
+错误详情
+EOF
+)
+ARGS=`getopt -o U --long offline,download -n "$args_help" -- "$@"`
+if [ $? != 0 ]; then exit 1 ; fi
+eval set -- "${ARGS}"
+while true
+do
+    case "$1" in
+        -U)
+            _with_upgrade=1 ;
+			_trans_args="$_trans_args -U";
+			shift ;;
+        --offline)
+            _run_mode="offline" ;
+			_trans_args="$_trans_args --offline";
+			 shift ;;
+        --download)
+            _run_mode="download" ;
+			_trans_args="$_trans_args --download";
+			 shift ;;
+        --) shift; break ;;
+        *)
+            echo "参数读取错误" ; exit 1 ;;
+    esac
+done
+
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 source /etc/profile
 
-if [ ! -d $openssl ]; then
+if [[ $_run_mode = "download" ]]; then
+	# yum install --downloadonly --downloaddir=./yumpackages -y $_required_packages
+	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" -o openssl.sh
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	sh openssl.sh -s -- $_trans_args
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" -o sqlite3.sh
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	sh sqlite3.sh -s -- $_trans_args
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	exit 0
+fi
+
+if [[ ! -d $openssl || $_with_upgrade = 1 ]]; then
 	echo "Install openssl to ${openssl}"
-	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh
+	if [ $_run_mode = "offline" ]; then
+		sh openssl.sh -s -- $_trans_args
+	else
+		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh -s -- $_trans_args
+	fi
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
-if [ ! -d $sqlite3 ]; then
+if [[ ! -d $sqlite3 || $_with_upgrade = 1 ]]; then
 	echo "Install sqlite3 to ${sqlite3}"
-	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | sh
+	if [ $_run_mode = 'offline' ]; then
+		sh openssl.sh -s -- $_trans_args
+	else
+		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | sh -s -- $_trans_args
+	fi
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
-yum install -y wget gcc gcc-c++ make zlib zlib-devel libffi libffi-devel expat expat-devel
-wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+
+cur_python_v=`python3 -V 2>&1`
+if [[ $? = 0 ]]; then
+	cur_python_v=${cur_python_v#* }
+	if [[ $_with_upgrade = 1 && $cur_python_v = $python_version ]]; then
+		echo 'Python Already installed.'
+		exit 0
+	fi
+fi
+
+yum install -y $_required_packages
+if [[ ! $_run_mode = "offline" ]]; then
+	wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+fi
 tar -zxvf Python-${python_version}.tgz && cd Python-${python_version}
 #  --enable-optimizations
 ./configure LDFLAGS="-L${openssl}/lib -L${sqlite3}/lib" CPPFLAGS="-I${sqlite3}/include" --enable-shared --enable-loadable-sqlite-extensions --enable-optimizations --with-system-expat --with-system-ffi --with-ensurepip=yes --with-lto --prefix=${path} ${with_openssl}

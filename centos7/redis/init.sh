@@ -2,25 +2,72 @@ path="/usr/local/redis"
 redis_ver="5.0.9"
 _password=""
 
-while getopts "p:" opt
+ # gcc-c++ make zlib zlib-devel libffi libffi-devel openssl openssl-devel
+_required_packages='wget gcc make automake expect'
+_trans_args=""
+_run_mode="normal"
+_with_upgrade=0
+
+args_help=$(cat <<- EOF
+$0 参数说明：
+	-p password
+    -U 升级
+    -offline 离线安装，使用--download下载的文件安装
+    -download 下载安装文件以供离线安装
+错误详情
+EOF
+)
+ARGS=`getopt -o Up: --long offline,download -n "$args_help" -- "$@"`
+if [ $? != 0 ]; then exit 1 ; fi
+eval set -- "${ARGS}"
+while true
 do
-	case $opt in
-		p)
-		_password=$OPTARG ;;
-		?)
-		echo "Usage of Options:"
-		echo "-p password"
-		exit 1;;
-	esac
+    case "$1" in
+        -p)
+            _password=$2 ;
+			shift 2 ;;
+        -U)
+            _with_upgrade=1 ;
+			_trans_args="$_trans_args -U";
+			shift ;;
+        --offline)
+            _run_mode="offline" ;
+			_trans_args="$_trans_args --offline";
+			 shift ;;
+        --download)
+            _run_mode="download" ;
+			_trans_args="$_trans_args --download";
+			 shift ;;
+        --) shift; break ;;
+        *)
+            echo "参数读取错误" ; exit 1 ;;
+    esac
 done
 
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
-yum install -y wget gcc make automake expect
- # gcc-c++ make zlib zlib-devel libffi libffi-devel openssl openssl-devel
-wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+if [[ $_run_mode = "download" ]]; then
+	wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	exit 0
+fi
+
+cur_redis_v=`redis-server -v 2>&1`
+if [[ $? = 0 ]]; then
+	cur_redis_v=${cur_redis_v#*v=}
+	cur_redis_v=${cur_redis_v%% *}
+	if [[ $_with_upgrade = 1 && $cur_redis_v = $redis_ver ]]; then
+		echo "Redis Already installed."
+		exit 0
+	fi
+fi
+
+yum install -y $_required_packages
+if [[ ! $_run_mode = "offline" ]]; then
+	wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+fi
 tar -zxvf redis-${redis_ver}.tar.gz && cd redis-${redis_ver}
 cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 processor=`expr \`grep processor /proc/cpuinfo 2>&1 | wc -l\` \* 3 / 4 + 1`
@@ -32,22 +79,24 @@ sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" redis.conf
 if [[ "$_PASSWORD" -ne "" ]]; then
 	sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" redis.conf
 fi
-mkdir -p ${path}/conf && cp -p redis.conf ${path}/conf/
-cd utils
-expect<<!
-spawn ./install_server.sh
-expect {
-	"Please select the redis port" { send "6379\r"; exp_continue; }
-	"Please select the redis config file" { send "${path}/conf/redis.conf\r"; exp_continue; }
-	"Please select the redis log file" { send "${path}/logs/redis_6379.log\r"; exp_continue; }
-	"Please select the data directory" { send "${path}/data/6379\r"; exp_continue; }
-	"Please select the redis executable" { send "${path}/bin/redis-server\r"; exp_continue; }
-	"Is this ok" { send "\r"; exp_continue; }
-	eof
-}
+if [[ ! -d ${path}/conf ]]; then
+	mkdir -p ${path}/conf && cp -p redis.conf ${path}/conf/
+	cd utils
+	expect<<!
+	spawn ./install_server.sh
+	expect {
+		"Please select the redis port" { send "6379\r"; exp_continue; }
+		"Please select the redis config file" { send "${path}/conf/redis.conf\r"; exp_continue; }
+		"Please select the redis log file" { send "${path}/logs/redis_6379.log\r"; exp_continue; }
+		"Please select the data directory" { send "${path}/data/6379\r"; exp_continue; }
+		"Please select the redis executable" { send "${path}/bin/redis-server\r"; exp_continue; }
+		"Is this ok" { send "\r"; exp_continue; }
+		eof
+	}
 !
-cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-cd ..
+	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
+	cd ..
+fi
 cd .. && rm -rf redis-${redis_ver}*
 
 if [[ ! "`grep "export PATH=.*${path}/bin.*" /etc/profile`" ]]; then
