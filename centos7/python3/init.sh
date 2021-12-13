@@ -17,8 +17,10 @@ $0 参数说明：
 错误详情
 EOF
 )
+echo "$@"
 ARGS=`getopt -o U --long offline,download -n "$args_help" -- "$@"`
 if [ $? != 0 ]; then exit 1 ; fi
+echo "${ARGS}"
 eval set -- "${ARGS}"
 while true
 do
