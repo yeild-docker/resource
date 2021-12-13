@@ -18,11 +18,11 @@ $0 参数说明：
 EOF
 )
 echo "$@"
-echo "$args_help"
 ARGS=`getopt -o U --long offline,download -n "$args_help" -- "$@"`
 if [ $? != 0 ]; then exit 1 ; fi
 echo "args1 ${ARGS}"
 eval set -- "${ARGS}"
+if [ $? != 0 ]; then exit 1 ; fi
 echo "args2 ${ARGS}"
 while true
 do
