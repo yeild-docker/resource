@@ -46,7 +46,7 @@ cd $workhome
 if [[ $_run_mode = "download" ]]; then
 	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" -o openssl.sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	sh openssl.sh -s -- $_trans_args
+	bash openssl.sh $_trans_args
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	wget --no-check-certificate -c https://www.sqlite.org/2021/sqlite-autoconf-${sqlite3_ver}.tar.gz -O sqlite-autoconf-${sqlite3_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -57,9 +57,9 @@ yum install -y $_required_packages
 if [[ ! -d $openssl || $_with_upgrade = 1 ]]; then
 	echo "Install openssl to ${openssl}"
 	if [ $_run_mode = "offline" ]; then
-		sh openssl.sh -s -- $_trans_args
+		bash openssl.sh $_trans_args
 	else
-		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh -s -- $_trans_args
+		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | bash -s -- $_trans_args
 	fi
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi

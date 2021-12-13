@@ -17,13 +17,10 @@ $0 参数说明：
 错误详情
 EOF
 )
-echo "$@"
 ARGS=`getopt -o U --long offline,download -n "$args_help" -- "$@"`
 if [ $? != 0 ]; then exit 1 ; fi
-echo "args1 ${ARGS}"
 eval set -- "${ARGS}"
 if [ $? != 0 ]; then exit 1 ; fi
-echo "args2 ${ARGS}"
 while true
 do
     case "$1" in
@@ -53,11 +50,11 @@ if [[ $_run_mode = "download" ]]; then
 	# yum install --downloadonly --downloaddir=./yumpackages -y $_required_packages
 	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" -o openssl.sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	sh openssl.sh -s -- $_trans_args
+	bash openssl.sh $_trans_args
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" -o sqlite3.sh
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	sh sqlite3.sh -s -- $_trans_args
+	bash sqlite3.sh $_trans_args
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
@@ -67,18 +64,18 @@ fi
 if [[ ! -d $openssl || $_with_upgrade = 1 ]]; then
 	echo "Install openssl to ${openssl}"
 	if [ $_run_mode = "offline" ]; then
-		sh openssl.sh -s -- $_trans_args
+		bash openssl.sh $_trans_args
 	else
-		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | sh -s -- $_trans_args
+		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/openssl/init.sh" | bash -s -- $_trans_args
 	fi
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 if [[ ! -d $sqlite3 || $_with_upgrade = 1 ]]; then
 	echo "Install sqlite3 to ${sqlite3}"
 	if [ $_run_mode = 'offline' ]; then
-		sh openssl.sh -s -- $_trans_args
+		bash openssl.sh $_trans_args
 	else
-		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | sh -s -- $_trans_args
+		curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | bash -s -- $_trans_args
 	fi
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
