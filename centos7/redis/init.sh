@@ -10,10 +10,10 @@ _with_upgrade=0
 
 args_help=$(cat <<- EOF
 $0 参数说明：
-	-p password
+    -p password
     -U 升级
-    -offline 离线安装，使用--download下载的文件安装
-    -download 下载安装文件以供离线安装
+    --offline 离线安装，使用--download下载的文件安装
+    --download 下载安装文件以供离线安装
 错误详情
 EOF
 )
