@@ -42,7 +42,7 @@ workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
 if [[ $_run_mode = "download" ]]; then
-	wget -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
+	wget --no-check-certificate -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	exit 0
 fi
@@ -59,7 +59,7 @@ fi
 
 yum install -y $_required_packages
 if [[ ! $_run_mode = "offline" ]]; then
-	wget -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
+	wget --no-check-certificate -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 tar -zxvf openssl-${openssl_ver}.tar.gz && cd openssl-${openssl_ver}

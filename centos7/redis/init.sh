@@ -48,7 +48,7 @@ workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
 
 if [[ $_run_mode = "download" ]]; then
-	wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+	wget --no-check-certificate -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	exit 0
 fi
@@ -65,7 +65,7 @@ fi
 
 yum install -y $_required_packages
 if [[ ! $_run_mode = "offline" ]]; then
-	wget -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
+	wget --no-check-certificate -c http://download.redis.io/releases/redis-${redis_ver}.tar.gz -O redis-${redis_ver}.tar.gz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 tar -zxvf redis-${redis_ver}.tar.gz && cd redis-${redis_ver}

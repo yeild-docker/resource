@@ -56,7 +56,7 @@ if [[ $_run_mode = "download" ]]; then
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	bash sqlite3.sh $_trans_args
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
-	wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
+	wget --no-check-certificate -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 	exit 0
 fi
@@ -91,7 +91,7 @@ fi
 
 yum install -y $_required_packages
 if [[ ! $_run_mode = "offline" ]]; then
-	wget -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
+	wget --no-check-certificate -c https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz -O Python-${python_version}.tgz
 	cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 tar -zxvf Python-${python_version}.tgz && cd Python-${python_version}
