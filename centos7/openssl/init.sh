@@ -40,6 +40,7 @@ done
 
 workhome=`cd $(dirname $0); pwd -P`
 cd $workhome
+source /etc/profile
 
 if [[ $_run_mode = "download" ]]; then
     wget --no-check-certificate -c https://www.openssl.org/source/openssl-${openssl_ver}.tar.gz -O openssl-${openssl_ver}.tar.gz

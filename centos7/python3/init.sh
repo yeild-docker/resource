@@ -73,7 +73,7 @@ fi
 if [[ ! -d $sqlite3 || $_with_upgrade = 1 ]]; then
     echo "Install sqlite3 to ${sqlite3}"
     if [ $_run_mode = 'offline' ]; then
-        bash openssl.sh $_trans_args
+        bash sqlite3.sh $_trans_args
     else
         curl -fsSL "https://gitee.com/yeildi/script-resource/raw/master/centos7/sqlite3/init.sh" | bash -s -- $_trans_args
     fi

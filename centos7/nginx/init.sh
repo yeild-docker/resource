@@ -53,6 +53,7 @@ if [[ $_run_mode = "download" ]]; then
     cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
     exit 0
 fi
+source /etc/profile
 
 if [[ ! -d $openssl || $_with_upgrade = 1 ]]; then
     echo "Install openssl to ${openssl}"
@@ -79,7 +80,7 @@ if [ ! -d ${pack_file} ]; then
         wget $wget_file_opts
         cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
     fi
-    tar -zxvf {pack_file}.tar.gz
+    tar -zxvf ${pack_file}.tar.gz
     cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 fi
 cd ${pack_file}

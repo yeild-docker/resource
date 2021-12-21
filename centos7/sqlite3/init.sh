@@ -52,6 +52,7 @@ if [[ $_run_mode = "download" ]]; then
     cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
     exit 0
 fi
+source /etc/profile
 
 yum install -y $_required_packages
 if [[ ! -d $openssl || $_with_upgrade = 1 ]]; then
