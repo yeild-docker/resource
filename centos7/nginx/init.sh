@@ -163,6 +163,7 @@ After=network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=forking
+LimitNOFILE=1048000
 PIDFile=${nginx_path}/logs/nginx.pid
 # Nginx will fail to start if ${nginx_path}/log/nginx.pid already exists but has the wrong
 # SELinux context. This might happen when running `nginx -t` from the cmdline.

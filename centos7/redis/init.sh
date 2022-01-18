@@ -110,6 +110,7 @@ cat <<- EOF > "/usr/lib/systemd/system/redisd.service"
 
     [Service]
     Type=forking
+	LimitNOFILE=104800
     Restart=always
     RestartSec=30
     ExecStart=${path}/bin/redisd start
