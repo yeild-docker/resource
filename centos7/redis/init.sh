@@ -76,7 +76,7 @@ cmd_rs=$?; if [ $cmd_rs -ne 0 ]; then exit $cmd_rs; fi
 sed -i "s|^\(bind.*\)$|#\1|g" redis.conf
 sed -i "s|^.*\(daemonize[[:blank:]]\)[a-z]*$|\1 yes|g" redis.conf
 sed -i "s|^.*\(protected-mode[[:blank:]]\)[a-z]*$|\1 no|g" redis.conf
-if [[ "$_password" -ne "" ]]; then
+if [[ ! "$_password" = "" ]]; then
 	sed -i "s|^[#]*[[:blank:]]\(requirepass[[:blank:]]\).*$|\1 ${_password}|g" redis.conf
 fi
 if [[ ! -d ${path}/conf ]]; then
